@@ -62,7 +62,7 @@ function App() {
           value={nome}
           onChange={(e) => setNome(e.target.value)}
         />
-        <button onClick={() => sendMessage()}>Enviar</button>
+        <button className="bg-gray-700 p-2" onClick={() => sendMessage()}>Enviar</button>
       </div>
     </>
   );
