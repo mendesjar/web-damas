@@ -5,18 +5,17 @@ import { faker } from "@faker-js/faker";
 interface Message {
   id: () => string;
   name: string;
-  text: string;
+  x: string;
+  y: string;
 }
 
 interface Payload {
   name: string;
-  text: string;
 }
 
 function App() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [nome, setNome] = useState<string>("");
-  const [text, setText] = useState<string>("");
 
   const socket = io("localhost:3333", {
     transports: ["websocket"],
@@ -27,7 +26,8 @@ function App() {
       const newMessage: Message = {
         id: faker.string.uuid,
         name: message.name,
-        text: message.text,
+        x: "20",
+        y: "15",
       };
       setMessages([...messages, newMessage]);
     }
@@ -39,10 +39,8 @@ function App() {
   function sendMessage() {
     const message: Payload = {
       name: nome,
-      text,
     };
     socket.emit("msgToServer", message);
-    setText("");
     setNome("");
   }
 
@@ -53,7 +51,7 @@ function App() {
           {messages.map((message) => {
             return (
               <p>
-                nome: {message.name}, mensagem: {message.text}
+                nome: {message.name} x: {message.x} , y: {message.y}
               </p>
             );
           })}
@@ -63,12 +61,6 @@ function App() {
           placeholder="nome"
           value={nome}
           onChange={(e) => setNome(e.target.value)}
-        />
-        <input
-          type="text"
-          placeholder="mensagem"
-          value={text}
-          onChange={(e) => setText(e.target.value)}
         />
         <button onClick={() => sendMessage()}>Enviar</button>
       </div>
