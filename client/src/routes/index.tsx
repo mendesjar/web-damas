@@ -1,20 +1,18 @@
-import {
-  Route,
-  RouterProvider,
-  createBrowserRouter,
-  createRoutesFromElements,
-} from "react-router-dom";
+import { RouterProvider, createBrowserRouter } from "react-router-dom";
 import App from "../App";
 import { StartGame } from "@/views";
 
 const Routes = () => {
-  const router = createBrowserRouter(
-    createRoutesFromElements(
-      <Route path="/" element={<StartGame />}>
-        <Route path="/start-game" element={<App />} />
-      </Route>
-    )
-  );
+  const router = createBrowserRouter([
+    {
+      path: "/",
+      element: <StartGame />,
+    },
+    {
+      path: "/rooms/:id",
+      element: <App />,
+    },
+  ]);
 
   return <RouterProvider router={router} />;
 };
