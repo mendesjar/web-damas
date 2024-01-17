@@ -18,7 +18,7 @@ function App() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [nome, setNome] = useState<string>("");
 
-  const socket = io("localhost:3333", {
+  const socket = io("https://web-damas-socket.onrender.com", {
     transports: ["websocket"],
   });
 
