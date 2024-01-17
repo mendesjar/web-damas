@@ -11,6 +11,7 @@ interface Message {
 
 interface Payload {
   name: string;
+  path: string;
 }
 
 function App() {
@@ -31,7 +32,7 @@ function App() {
       };
       setMessages([...messages, newMessage]);
     }
-    socket.on("msgToClient", (message: Payload) => {
+    socket.on(`msgToClient:${window.location.pathname}`, (message: Payload) => {
       receivedMenssage(message);
     });
   }, [messages]);
@@ -39,6 +40,7 @@ function App() {
   function sendMessage() {
     const message: Payload = {
       name: nome,
+      path: window.location.pathname,
     };
     socket.emit("msgToServer", message);
     setNome("");
@@ -62,7 +64,9 @@ function App() {
           value={nome}
           onChange={(e) => setNome(e.target.value)}
         />
-        <button className="bg-gray-700 p-2" onClick={() => sendMessage()}>Enviar</button>
+        <button className="bg-gray-700 p-2" onClick={() => sendMessage()}>
+          Enviar
+        </button>
       </div>
     </>
   );
