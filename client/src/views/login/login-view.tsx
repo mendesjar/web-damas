@@ -9,7 +9,7 @@ const StartGame = () => {
 
   function generateRoomGame(codRoom: string | null) {
     const urlRoom = codRoom ? codRoom : faker.string.sample(5);
-    return `/${urlRoom}`;
+    return `/${urlRoom.toUpperCase()}`;
   }
   return (
     <div className="w-screen h-screen flex flex-col justify-center items-center bg-slate-900">

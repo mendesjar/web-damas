@@ -1,6 +1,10 @@
 import { useEffect, useState } from "react";
 import { io } from "socket.io-client";
 import { faker } from "@faker-js/faker";
+import { Button } from "./components/ui/button";
+import { CopySimple } from "@phosphor-icons/react";
+import { Toaster } from "@/components/ui/toaster";
+import { useToast } from "@/components/ui/use-toast";
 
 interface Message {
   id: () => string;
@@ -17,6 +21,7 @@ interface Payload {
 function App() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [nome, setNome] = useState<string>("");
+  const { toast } = useToast();
   const path = window.location.pathname.replace(/\s|\//g, "");
 
   const socket = io("https://web-damas-socket.onrender.com", {
@@ -69,6 +74,19 @@ function App() {
           Enviar
         </button>
       </div>
+      <Button
+        className="fixed bottom-5 left-10 right-10 xl:left-1/4 xl:right-1/4 md:left-60 md:right-60 sm:left-10 sm:right-10 bg-slate-700 hover:bg-slate-900 text-white"
+        onClick={() => {
+          navigator.clipboard.writeText(path);
+          toast({
+            description: "Código copiado",
+          });
+        }}
+      >
+        <p className="mr-3">{path}</p>
+        <CopySimple weight="fill" />
+      </Button>
+      <Toaster />
     </>
   );
 }
