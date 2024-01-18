@@ -17,7 +17,7 @@ interface Payload {
 function App() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [nome, setNome] = useState<string>("");
-  const path = window.location.pathname.replace(/\D/g, "");
+  const path = window.location.pathname.replace(/\s|\//g, "");
 
   const socket = io("https://web-damas-socket.onrender.com", {
     transports: ["websocket"],
