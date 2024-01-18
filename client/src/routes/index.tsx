@@ -9,7 +9,7 @@ const Routes = () => {
       element: <StartGame />,
     },
     {
-      path: "/rooms/:id",
+      path: "/:id",
       element: <App />,
     },
   ]);

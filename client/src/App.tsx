@@ -17,6 +17,7 @@ interface Payload {
 function App() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [nome, setNome] = useState<string>("");
+  const path = window.location.pathname.replace(/\D/g, "");
 
   const socket = io("https://web-damas-socket.onrender.com", {
     transports: ["websocket"],
@@ -32,7 +33,7 @@ function App() {
       };
       setMessages([...messages, newMessage]);
     }
-    socket.on(`msgToClient:${window.location.pathname}`, (message: Payload) => {
+    socket.on(`msgToClient:${path}`, (message: Payload) => {
       receivedMenssage(message);
     });
   }, [messages]);
@@ -40,7 +41,7 @@ function App() {
   function sendMessage() {
     const message: Payload = {
       name: nome,
-      path: window.location.pathname,
+      path,
     };
     socket.emit("msgToServer", message);
     setNome("");
