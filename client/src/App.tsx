@@ -5,7 +5,7 @@ import { Button } from "./components/ui/button";
 import { Circle, CopySimple } from "@phosphor-icons/react";
 import { Toaster } from "@/components/ui/toaster";
 import { useToast } from "@/components/ui/use-toast";
-import { SessionService } from "./services";
+//import { SessionService } from "./services";
 
 interface Message {
   id: string;
@@ -30,8 +30,8 @@ interface Payload {
 function App() {
   const [board, setBoard] = useState<Board[][]>([]);
   const [messages, setMessages] = useState<Message[]>([]);
-  const sessionService = new SessionService();
-  const usuario = sessionService.getUsuario();
+  //const sessionService = new SessionService();
+  //const usuario = sessionService.getUsuario();
   const { toast } = useToast();
   const path = window.location.pathname.replace(/\s|\//g, "");
 
@@ -54,14 +54,14 @@ function App() {
     });
   }, [messages]);
 
-  function sendMessage() {
+/*   function sendMessage() {
     const message: Payload = {
       id: usuario.id,
       name: usuario.nome,
       path,
     };
     socket.emit("msgToServer", message);
-  }
+  } */
 
   const createBoard = () => {
     const newBoard: Board[][] = [];
