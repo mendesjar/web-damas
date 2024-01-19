@@ -54,7 +54,7 @@ function App() {
     });
   }, [messages]);
 
-/*   function sendMessage() {
+  /*   function sendMessage() {
     const message: Payload = {
       id: usuario.id,
       name: usuario.nome,
@@ -71,13 +71,13 @@ function App() {
 
       for (let column = 0; column < 8; column++) {
         const square: any = {
-          color: (row + column) % 2 === 0 ? "slate-300" : "slate-500",
+          color: (row + column) % 2 === 0 ? "bg-white" : "bg-black",
           piece: null,
         };
         if (row <= 2 && (row + column) % 2 === 1) {
-          square.piece = { type: "pawn", color: "white" };
+          square.piece = { type: "pawn", color: "text-orange-200" };
         } else if (row >= 5 && (row + column) % 2 === 1) {
-          square.piece = { type: "pawn", color: "#0f172a" };
+          square.piece = { type: "pawn", color: "text-amber-800" };
         }
         newRow.push(square);
       }
@@ -107,10 +107,13 @@ function App() {
                       className="column select-none cursor-pointer"
                     >
                       <div
-                        className={`square flex w-6 h-6 justify-center items-center bg-${column.color} hover:bg-gray-600 rounded-sm`}
+                        className={`square flex w-6 h-6 justify-center items-center ${column.color} hover:bg-gray-600 rounded`}
                       >
                         {column.piece && (
-                          <Circle weight="fill" color={column.piece.color} />
+                          <Circle
+                            weight="fill"
+                            className={`${column.piece.color}`}
+                          />
                         )}
                       </div>
                     </td>
