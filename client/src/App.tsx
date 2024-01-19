@@ -15,7 +15,12 @@ interface Message {
 }
 
 interface Board {
-  piece: any;
+  piece?: {
+    type: string;
+    color: string;
+    x: string;
+    y: string;
+  };
   x: string;
   y: string;
   color: string;
@@ -35,7 +40,7 @@ function App() {
   const { toast } = useToast();
   const path = window.location.pathname.replace(/\s|\//g, "");
 
-  const socket = io("https://web-damas-socket.onrender.com", {
+  const socket = io("localhost:3333", {
     transports: ["websocket"],
   });
 
@@ -63,6 +68,12 @@ function App() {
     socket.emit("msgToServer", message);
   } */
 
+  useEffect(() => {
+    socket.on(`msgToClientGetAllUser:${path}`, (message: Payload) => {
+      console.log(message);
+    });
+  }, []);
+
   const createBoard = () => {
     const newBoard: Board[][] = [];
 
@@ -75,9 +86,19 @@ function App() {
           piece: null,
         };
         if (row <= 2 && (row + column) % 2 === 1) {
-          square.piece = { type: "pawn", color: "text-orange-200" };
+          square.piece = {
+            type: "pawn",
+            color: "text-orange-200",
+            x: 7 - row,
+            y: column,
+          };
         } else if (row >= 5 && (row + column) % 2 === 1) {
-          square.piece = { type: "pawn", color: "text-amber-800" };
+          square.piece = {
+            type: "pawn",
+            color: "text-amber-800",
+            x: 7 - row,
+            y: column,
+          };
         }
         newRow.push(square);
       }

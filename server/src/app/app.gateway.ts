@@ -24,6 +24,11 @@ export class AppGateway
     this.server.emit(`msgToClient:${payloadDto.path}`, payload, client.id);
   }
 
+  @SubscribeMessage("msgToServerGetAllUsers")
+  getAllUsers(client: Socket, payload: any): void {
+    this.server.emit(`msgToClient:${payload.path}`, payload, client.id);
+  }
+
   afterInit() {
     this.logger.log("Iniciado");
   }
