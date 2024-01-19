@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { io } from "socket.io-client";
 import { faker } from "@faker-js/faker";
 import { Button } from "./components/ui/button";
-import { CopySimple } from "@phosphor-icons/react";
+import { Circle, CopySimple } from "@phosphor-icons/react";
 import { Toaster } from "@/components/ui/toaster";
 import { useToast } from "@/components/ui/use-toast";
 import { SessionService } from "./services";
@@ -14,6 +14,13 @@ interface Message {
   y: string;
 }
 
+interface Board {
+  piece: any;
+  x: string;
+  y: string;
+  color: string;
+}
+
 interface Payload {
   id: string;
   name: string;
@@ -21,7 +28,7 @@ interface Payload {
 }
 
 function App() {
-  const [matriz, setMatriz] = useState<Message[][]>([]);
+  const [board, setBoard] = useState<Board[][]>([]);
   const [messages, setMessages] = useState<Message[]>([]);
   const sessionService = new SessionService();
   const usuario = sessionService.getUsuario();
@@ -56,45 +63,56 @@ function App() {
     socket.emit("msgToServer", message);
   }
 
-  const formarMatriz = (rows: number, columns: number) => {
-    const newMatriz: Message[][] = [];
+  const createBoard = () => {
+    const newBoard: Board[][] = [];
 
-    for (let row = 0; row < rows; row++) {
-      const newRow: any[] = [];
+    for (let row = 0; row < 8; row++) {
+      const newRow: Board[] = [];
 
-      for (let column = 0; column < columns; column++) {
+      for (let column = 0; column < 8; column++) {
         const square: any = {
-          x: "0",
-          y: "0",
+          color: (row + column) % 2 === 0 ? "slate-300" : "slate-500",
+          piece: null,
         };
+        if (row <= 2 && (row + column) % 2 === 1) {
+          square.piece = { type: "pawn", color: "white" };
+        } else if (row >= 5 && (row + column) % 2 === 1) {
+          square.piece = { type: "pawn", color: "#0f172a" };
+        }
         newRow.push(square);
       }
-      newMatriz.push(newRow);
+      newBoard.push(newRow);
     }
-    setMatriz(newMatriz);
+    setBoard(newBoard);
   };
 
   useEffect(() => {
-    formarMatriz(8, 8);
+    createBoard();
   }, []);
 
   return (
     <>
-      <main className="flex min-h-screen flex-col items-center justify-between p-24">
+      <main className="flex min-h-screen flex-col items-center justify-between p-24 bg-slate-800">
         <div id="game">
           <table
             className="flex flex-col justify-center items-center w-min mt-5 m-auto p-3 border rounded-md"
             onContextMenu={(e) => e.preventDefault()}
           >
             <tbody>
-              {matriz.map((row, rowIndex) => (
+              {board.map((row, rowIndex) => (
                 <tr key={`row-${rowIndex}`} className="row flex w-min">
                   {row.map((column, columnIndex) => (
                     <td
                       key={`column-${columnIndex}`}
                       className="column select-none cursor-pointer"
                     >
-                      <div className="square flex w-6 h-6 justify-center items-center bg-slate-200 hover:bg-gray-300 rounded-sm"></div>
+                      <div
+                        className={`square flex w-6 h-6 justify-center items-center bg-${column.color} hover:bg-gray-600 rounded-sm`}
+                      >
+                        {column.piece && (
+                          <Circle weight="fill" color={column.piece.color} />
+                        )}
+                      </div>
                     </td>
                   ))}
                 </tr>
