@@ -15,9 +15,12 @@ interface Message {
 }
 
 interface Board {
-  piece: any;
-  x: string;
-  y: string;
+  piece?: {
+    type: string;
+    color: string;
+  };
+  x: number;
+  y: number;
   color: string;
 }
 
@@ -70,9 +73,11 @@ const GameView = () => {
       const newRow: Board[] = [];
 
       for (let column = 0; column < 8; column++) {
-        const square: any = {
+        const square: Board = {
           color: (row + column) % 2 === 0 ? "bg-white" : "bg-black",
-          piece: null,
+          piece: undefined,
+          x: row,
+          y: column,
         };
         if (row <= 2 && (row + column) % 2 === 1) {
           square.piece = { type: "pawn", color: "text-orange-200" };
@@ -84,6 +89,14 @@ const GameView = () => {
       newBoard.push(newRow);
     }
     setBoard(newBoard);
+  };
+
+  const movePawn = (rowIndex: number, columnIndex: number) => {
+    /* setBoard(prevState => {
+      const newMatriz = [...prevState];
+      return newMatriz;
+    }); */
+    console.log(rowIndex, columnIndex);
   };
 
   useEffect(() => {
@@ -108,6 +121,7 @@ const GameView = () => {
                     >
                       <div
                         className={`square flex w-6 h-6 justify-center items-center ${column.color} hover:bg-gray-600 rounded`}
+                        onClick={() => movePawn(rowIndex, columnIndex)}
                       >
                         {column.piece && (
                           <Circle
@@ -139,6 +153,6 @@ const GameView = () => {
       <Toaster />
     </>
   );
-}
+};
 
 export default GameView;
