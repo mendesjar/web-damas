@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { io } from "socket.io-client";
 import { faker } from "@faker-js/faker";
-import { Button } from "./components/ui/button";
+import { Button } from "../../components/ui/button";
 import { Circle, CopySimple } from "@phosphor-icons/react";
 import { Toaster } from "@/components/ui/toaster";
 import { useToast } from "@/components/ui/use-toast";
@@ -27,7 +27,7 @@ interface Payload {
   path: string;
 }
 
-function App() {
+const GameView = () => {
   const [board, setBoard] = useState<Board[][]>([]);
   const [messages, setMessages] = useState<Message[]>([]);
   //const sessionService = new SessionService();
@@ -141,4 +141,4 @@ function App() {
   );
 }
 
-export default App;
+export default GameView;

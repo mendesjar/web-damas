@@ -12,7 +12,7 @@ interface User {
   nome: string;
 }
 
-const StartGame = () => {
+const LoginView = () => {
   const history = useNavigate();
   const [codRoom, setCodRoom] = useState<string>("");
   const [nameUser, setNameUser] = useState<string>("");
@@ -91,4 +91,4 @@ const StartGame = () => {
   );
 };
 
-export default StartGame;
+export default LoginView;

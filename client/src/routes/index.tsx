@@ -1,16 +1,15 @@
 import { RouterProvider, createBrowserRouter } from "react-router-dom";
-import App from "../App";
-import { StartGame } from "@/views";
+import { LoginView, GameView } from "@/views";
 
 const Routes = () => {
   const router = createBrowserRouter([
     {
       path: "/",
-      element: <StartGame />,
+      element: <LoginView />,
     },
     {
       path: "/:id",
-      element: <App />,
+      element: <GameView />,
     },
   ]);
 
