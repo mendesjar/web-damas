@@ -6,6 +6,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { useToast } from "@/components/ui/use-toast";
 import { Board, Message, SelectedPiece } from "./interfaces";
 import { SessionService } from "../../services";
+import { locales } from "../../resources";
 
 const GameView = () => {
   const [board, setBoard] = useState<Board[][]>([]);
@@ -16,8 +17,12 @@ const GameView = () => {
   const usuario = sessionService.getUsuario();
   const { toast } = useToast();
   const path = window.location.pathname.replace(/\s|\//g, "");
+  const connection =
+    locales.enviroment == "production"
+      ? locales.socketApi
+      : `${locales.socketHost}:${locales.socketPort}`;
 
-  const socket = io("localhost:3333", {
+  const socket = io(connection, {
     transports: ["websocket"],
   });
 
