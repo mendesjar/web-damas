@@ -1,51 +1,29 @@
 import { useEffect, useState } from "react";
 import { io } from "socket.io-client";
-import { faker } from "@faker-js/faker";
 import { Button } from "../../components/ui/button";
 import { Circle, CopySimple } from "@phosphor-icons/react";
 import { Toaster } from "@/components/ui/toaster";
 import { useToast } from "@/components/ui/use-toast";
-import { Board, Message, Payload, SelectedPiece } from "./interfaces";
-//import { SessionService } from "./services";
+import { Board, Message, SelectedPiece } from "./interfaces";
+import { SessionService } from "../../services";
 
 const GameView = () => {
   const [board, setBoard] = useState<Board[][]>([]);
-  const [messages, setMessages] = useState<Message[]>([]);
   const [selectedPiece, setSelectedPiece] = useState<SelectedPiece | null>(
     null
   );
-  //const sessionService = new SessionService();
-  //const usuario = sessionService.getUsuario();
+  const sessionService = new SessionService();
+  const usuario = sessionService.getUsuario();
   const { toast } = useToast();
   const path = window.location.pathname.replace(/\s|\//g, "");
 
-  const socket = io("https://web-damas-socket.onrender.com", {
+  const socket = io("localhost:3333", {
     transports: ["websocket"],
   });
 
   useEffect(() => {
-    function receivedMenssage(message: any) {
-      const newMessage: Message = {
-        id: faker.string.uuid(),
-        name: message.name,
-        x: "20",
-        y: "15",
-      };
-      setMessages([...messages, newMessage]);
-    }
-    socket.on(`msgToClient:${path}`, (message: Payload) => {
-      receivedMenssage(message);
-    });
-  }, [messages]);
-
-  /*   function sendMessage() {
-    const message: Payload = {
-      id: usuario.id,
-      name: usuario.nome,
-      path,
-    };
-    socket.emit("msgToServer", message);
-  } */
+    createBoard();
+  }, []);
 
   const createBoard = () => {
     const newBoard: Board[][] = [];
@@ -56,7 +34,7 @@ const GameView = () => {
       for (let column = 0; column < 8; column++) {
         const square: Board = {
           color: (row + column) % 2 === 0 ? "bg-white" : "bg-black",
-          piece: undefined,
+          piece: { type: null },
           x: row,
           y: column,
         };
@@ -76,7 +54,12 @@ const GameView = () => {
     if (selectedPiece) {
       movePawn(rowIndex, columnIndex);
     } else {
-      setSelectedPiece({ x: rowIndex, y: columnIndex });
+      setSelectedPiece({
+        x: rowIndex,
+        y: columnIndex,
+        oldX: rowIndex,
+        oldY: columnIndex,
+      });
     }
   };
 
@@ -85,13 +68,33 @@ const GameView = () => {
     if (selectedPiece) {
       newBoard[newX][newY].piece =
         newBoard[selectedPiece.x][selectedPiece.y].piece;
-      newBoard[selectedPiece.x][selectedPiece.y].piece = undefined;
+      newBoard[selectedPiece.x][selectedPiece.y].piece = { type: null };
+      sendMessage({ ...selectedPiece, oldX: newX, oldY: newY });
     }
     setSelectedPiece(null);
   };
 
+  function sendMessage(selectedPiece: SelectedPiece) {
+    const message: Message = {
+      id: usuario.id,
+      name: usuario.nome,
+      x: selectedPiece.x,
+      y: selectedPiece.y,
+      oldX: selectedPiece.oldX,
+      oldY: selectedPiece.oldY,
+      path,
+      board,
+    };
+    socket.emit("msgToServer", message);
+  }
+
   useEffect(() => {
-    createBoard();
+    function receivedMenssage(message: Message) {
+      setBoard(message.board);
+    }
+    socket.on(`msgToClient:${path}`, (message: Message) => {
+      receivedMenssage(message);
+    });
   }, []);
 
   return (
@@ -122,7 +125,7 @@ const GameView = () => {
                         } hover:bg-gray-600 rounded`}
                         onClick={() => selectPiece(rowIndex, columnIndex)}
                       >
-                        {column.piece && (
+                        {column.piece?.type === "pawn" && (
                           <Circle
                             weight="fill"
                             className={`${column.piece.color}`}

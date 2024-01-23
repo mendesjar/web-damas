@@ -1,14 +1,14 @@
-export interface Message {
+export interface Message extends SelectedPiece {
   id: string;
   name: string;
-  x: string;
-  y: string;
+  path?: string;
+  board?: any;
 }
 
 export interface Board {
   piece?: {
-    type: string;
-    color: string;
+    type: string | null;
+    color?: string;
   };
   x: number;
   y: number;
@@ -24,4 +24,6 @@ export interface Payload {
 export interface SelectedPiece {
   x: number;
   y: number;
+  oldX: number;
+  oldY: number;
 }
