@@ -1,35 +1,19 @@
 import { useEffect, useState } from "react";
 import { io } from "socket.io-client";
 import { faker } from "@faker-js/faker";
-import { Button } from "./components/ui/button";
+import { Button } from "../../components/ui/button";
 import { Circle, CopySimple } from "@phosphor-icons/react";
 import { Toaster } from "@/components/ui/toaster";
 import { useToast } from "@/components/ui/use-toast";
+import { Board, Message, Payload, SelectedPiece } from "./interfaces";
 //import { SessionService } from "./services";
 
-interface Message {
-  id: string;
-  name: string;
-  x: string;
-  y: string;
-}
-
-interface Board {
-  piece: any;
-  x: string;
-  y: string;
-  color: string;
-}
-
-interface Payload {
-  id: string;
-  name: string;
-  path: string;
-}
-
-function App() {
+const GameView = () => {
   const [board, setBoard] = useState<Board[][]>([]);
   const [messages, setMessages] = useState<Message[]>([]);
+  const [selectedPiece, setSelectedPiece] = useState<SelectedPiece | null>(
+    null
+  );
   //const sessionService = new SessionService();
   //const usuario = sessionService.getUsuario();
   const { toast } = useToast();
@@ -70,9 +54,11 @@ function App() {
       const newRow: Board[] = [];
 
       for (let column = 0; column < 8; column++) {
-        const square: any = {
+        const square: Board = {
           color: (row + column) % 2 === 0 ? "bg-white" : "bg-black",
-          piece: null,
+          piece: undefined,
+          x: row,
+          y: column,
         };
         if (row <= 2 && (row + column) % 2 === 1) {
           square.piece = { type: "pawn", color: "text-orange-200" };
@@ -84,6 +70,24 @@ function App() {
       newBoard.push(newRow);
     }
     setBoard(newBoard);
+  };
+
+  const selectPiece = (rowIndex: number, columnIndex: number) => {
+    if (selectedPiece) {
+      movePawn(rowIndex, columnIndex);
+    } else {
+      setSelectedPiece({ x: rowIndex, y: columnIndex });
+    }
+  };
+
+  const movePawn = (newX: number, newY: number) => {
+    const newBoard = board;
+    if (selectedPiece) {
+      newBoard[newX][newY].piece =
+        newBoard[selectedPiece.x][selectedPiece.y].piece;
+      newBoard[selectedPiece.x][selectedPiece.y].piece = undefined;
+    }
+    setSelectedPiece(null);
   };
 
   useEffect(() => {
@@ -107,7 +111,16 @@ function App() {
                       className="column select-none cursor-pointer"
                     >
                       <div
-                        className={`square flex w-6 h-6 justify-center items-center ${column.color} hover:bg-gray-600 rounded`}
+                        className={`square flex w-6 h-6 justify-center items-center ${
+                          column.color
+                        } ${
+                          selectedPiece &&
+                          selectedPiece.x === rowIndex &&
+                          selectedPiece.y === columnIndex
+                            ? "bg-red-600"
+                            : ""
+                        } hover:bg-gray-600 rounded`}
+                        onClick={() => selectPiece(rowIndex, columnIndex)}
                       >
                         {column.piece && (
                           <Circle
@@ -139,6 +152,6 @@ function App() {
       <Toaster />
     </>
   );
-}
+};
 
-export default App;
+export default GameView;
