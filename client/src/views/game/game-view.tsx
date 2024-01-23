@@ -5,34 +5,15 @@ import { Button } from "../../components/ui/button";
 import { Circle, CopySimple } from "@phosphor-icons/react";
 import { Toaster } from "@/components/ui/toaster";
 import { useToast } from "@/components/ui/use-toast";
+import { Board, Message, Payload, SelectedPiece } from "./interfaces";
 //import { SessionService } from "./services";
-
-interface Message {
-  id: string;
-  name: string;
-  x: string;
-  y: string;
-}
-
-interface Board {
-  piece?: {
-    type: string;
-    color: string;
-  };
-  x: number;
-  y: number;
-  color: string;
-}
-
-interface Payload {
-  id: string;
-  name: string;
-  path: string;
-}
 
 const GameView = () => {
   const [board, setBoard] = useState<Board[][]>([]);
   const [messages, setMessages] = useState<Message[]>([]);
+  const [selectedPiece, setSelectedPiece] = useState<SelectedPiece | null>(
+    null
+  );
   //const sessionService = new SessionService();
   //const usuario = sessionService.getUsuario();
   const { toast } = useToast();
@@ -91,12 +72,22 @@ const GameView = () => {
     setBoard(newBoard);
   };
 
-  const movePawn = (rowIndex: number, columnIndex: number) => {
-    /* setBoard(prevState => {
-      const newMatriz = [...prevState];
-      return newMatriz;
-    }); */
-    console.log(rowIndex, columnIndex);
+  const selectPiece = (rowIndex: number, columnIndex: number) => {
+    if (selectedPiece) {
+      movePawn(rowIndex, columnIndex);
+    } else {
+      setSelectedPiece({ x: rowIndex, y: columnIndex });
+    }
+  };
+
+  const movePawn = (newX: number, newY: number) => {
+    const newBoard = board;
+    if (selectedPiece) {
+      newBoard[newX][newY].piece =
+        newBoard[selectedPiece.x][selectedPiece.y].piece;
+      newBoard[selectedPiece.x][selectedPiece.y].piece = undefined;
+    }
+    setSelectedPiece(null);
   };
 
   useEffect(() => {
@@ -120,8 +111,16 @@ const GameView = () => {
                       className="column select-none cursor-pointer"
                     >
                       <div
-                        className={`square flex w-6 h-6 justify-center items-center ${column.color} hover:bg-gray-600 rounded`}
-                        onClick={() => movePawn(rowIndex, columnIndex)}
+                        className={`square flex w-6 h-6 justify-center items-center ${
+                          column.color
+                        } ${
+                          selectedPiece &&
+                          selectedPiece.x === rowIndex &&
+                          selectedPiece.y === columnIndex
+                            ? "bg-red-600"
+                            : ""
+                        } hover:bg-gray-600 rounded`}
+                        onClick={() => selectPiece(rowIndex, columnIndex)}
                       >
                         {column.piece && (
                           <Circle
