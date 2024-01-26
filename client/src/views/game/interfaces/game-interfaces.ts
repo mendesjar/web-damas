@@ -7,13 +7,16 @@ export interface Message extends SelectedPiece {
 
 export interface Board {
   piece?: {
-    type: string | null;
+    type: PieceType;
     color?: string;
   };
   x: number;
   y: number;
-  color: string;
+  color: SquardColor;
 }
+
+type SquardColor = "bg-white" | "bg-black";
+type PieceType = "pawn" | null;
 
 export interface Payload {
   id: string;
