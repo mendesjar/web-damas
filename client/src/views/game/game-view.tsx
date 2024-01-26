@@ -58,9 +58,9 @@ const GameView = () => {
   const selectPiece = (rowIndex: number, columnIndex: number) => {
     if (selectedPiece) {
       const isValidMove = validateMove(rowIndex, columnIndex);
-      if (!isValidMove) {
-        setSelectedPiece(null);
-      } else movePawn(rowIndex, columnIndex);
+      if (isValidMove) {
+        movePawn(rowIndex, columnIndex);
+      } else setSelectedPiece(null);
     } else {
       setSelectedPiece({
         x: rowIndex,
@@ -74,7 +74,26 @@ const GameView = () => {
   function validateMove(newX: number, newY: number) {
     if (board[newX][newY].color === "bg-white") return false;
     if (board[newX][newY].piece?.type === "pawn") return false;
+    const isValidAdjacentMove = validateAdjacentMove(
+      newX,
+      newY,
+      selectedPiece?.x,
+      selectedPiece?.y
+    );
+    if (isValidAdjacentMove) return false;
     return true;
+  }
+
+  function validateAdjacentMove(
+    fromRow: number,
+    fromCol: number,
+    toRow: number | undefined,
+    toCol: number | undefined
+  ) {
+    if (toRow && toCol) {
+      const distance = Math.abs(fromRow - toRow) + Math.abs(fromCol - toCol);
+      return distance !== 2;
+    }
   }
 
   const movePawn = (newX: number, newY: number) => {
