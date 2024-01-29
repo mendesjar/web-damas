@@ -74,13 +74,25 @@ const GameView = () => {
   function validateMove(newX: number, newY: number) {
     if (board[newX][newY].color === "bg-white") return false;
     if (board[newX][newY].piece?.type === "pawn") return false;
-    const isValidAdjacentMove = validateAdjacentMove(
+    const adjacentMove = validateAdjacentMove(
       newX,
       newY,
       selectedPiece?.x,
       selectedPiece?.y
     );
-    if (isValidAdjacentMove) return false;
+    if (adjacentMove === "noValid") return false;
+    if (adjacentMove === "eat") {
+      const pawnBetween = verifyPawnBetweenPieces(
+        board,
+        [selectedPiece?.x, selectedPiece?.y],
+        [newX, newY]
+      );
+      if (pawnBetween) {
+        return adjacentMove;
+      } else {
+        return pawnBetween;
+      }
+    }
     return true;
   }
 
@@ -92,9 +104,43 @@ const GameView = () => {
   ) {
     if (toRow && toCol) {
       const distance = Math.abs(fromRow - toRow) + Math.abs(fromCol - toCol);
-      return distance !== 2;
+      if (distance === 4) return "eat";
+      if (distance === 2) return "move";
+      return "noValid";
     }
   }
+
+  const verifyPawnBetweenPieces = (
+    board: Board[][],
+    start: [number | undefined, number | undefined],
+    end: [number, number]
+  ): boolean => {
+    if (start[0] && start[1]) {
+      const oldSquare = board[start[0]][start[1]];
+      const dx = end[0] - start[0];
+      const dy = end[1] - start[1];
+      const stepX = dx / Math.abs(dx);
+      const stepY = dy / Math.abs(dy);
+
+      let betweenX = start[0] + stepX;
+      let betweenY = start[1] + stepY;
+
+      while (betweenX !== end[0] && betweenY !== end[1]) {
+        const square = board[betweenX][betweenY];
+
+        if (
+          square.piece?.type !== null &&
+          square.piece?.color !== oldSquare.piece?.color
+        ) {
+          return true;
+        }
+
+        betweenX += stepX;
+        betweenY += stepY;
+      }
+    }
+    return false;
+  };
 
   const movePawn = (newX: number, newY: number) => {
     const newBoard = board;
