@@ -116,6 +116,7 @@ const GameView = () => {
     end: [number, number]
   ): boolean => {
     if (start[0] && start[1]) {
+      const oldSquare = board[start[0]][start[1]];
       const dx = end[0] - start[0];
       const dy = end[1] - start[1];
       const stepX = dx / Math.abs(dx);
@@ -127,16 +128,18 @@ const GameView = () => {
       while (betweenX !== end[0] && betweenY !== end[1]) {
         const square = board[betweenX][betweenY];
 
-        if (square.piece?.type !== null) {
+        if (
+          square.piece?.type !== null &&
+          square.piece?.color !== oldSquare.piece?.color
+        ) {
           return true;
         }
 
         betweenX += stepX;
         betweenY += stepY;
       }
-      return false;
     }
-    return true;
+    return false;
   };
 
   const movePawn = (newX: number, newY: number) => {
