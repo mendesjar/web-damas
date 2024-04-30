@@ -60,8 +60,9 @@ const GameView = () => {
     if (turn) {
       if (selectedPiece) {
         const isValidMove = validateMove(rowIndex, columnIndex);
-        if (isValidMove) {
-          movePawn(rowIndex, columnIndex);
+        if (isValidMove.valid) {
+          const move = isValidMove?.x ? isValidMove : undefined;
+          movePawn(rowIndex, columnIndex, move);
         } else setSelectedPiece(null);
       } else {
         setSelectedPiece({
@@ -80,28 +81,24 @@ const GameView = () => {
   };
 
   function validateMove(newX: number, newY: number) {
-    if (board[newX][newY].color === "bg-white") return false;
-    if (board[newX][newY].piece?.type === "pawn") return false;
+    if (board[newX][newY].color === "bg-white") return { valid: false };
+    if (board[newX][newY].piece?.type === "pawn") return { valid: false };
     const adjacentMove = validateAdjacentMove(
       newX,
       newY,
       selectedPiece?.x,
       selectedPiece?.y
     );
-    if (adjacentMove === "noValid") return false;
+    if (adjacentMove === "noValid") return { valid: false };
     if (adjacentMove === "eat") {
       const pawnBetween = verifyPawnBetweenPieces(
         board,
         [selectedPiece?.x, selectedPiece?.y],
         [newX, newY]
       );
-      if (pawnBetween) {
-        return adjacentMove;
-      } else {
-        return pawnBetween;
-      }
+      return pawnBetween;
     }
-    return true;
+    return { valid: true };
   }
 
   function validateAdjacentMove(
@@ -122,7 +119,7 @@ const GameView = () => {
     board: Board[][],
     start: [number | undefined, number | undefined],
     end: [number, number]
-  ): boolean => {
+  ): { valid: boolean; x?: number; y?: number } => {
     if (start[0] && start[1]) {
       const oldSquare = board[start[0]][start[1]];
       const dx = end[0] - start[0];
@@ -140,22 +137,29 @@ const GameView = () => {
           square.piece?.type !== null &&
           square.piece?.color !== oldSquare.piece?.color
         ) {
-          return true;
+          return { valid: true, x: betweenX, y: betweenY };
         }
 
         betweenX += stepX;
         betweenY += stepY;
       }
     }
-    return false;
+    return { valid: false };
   };
 
-  const movePawn = (newX: number, newY: number) => {
+  const movePawn = (
+    newX: number,
+    newY: number,
+    eat: { valid: boolean; x?: number; y?: number } | undefined
+  ) => {
     const newBoard = board;
     if (selectedPiece) {
       newBoard[newX][newY].piece =
         newBoard[selectedPiece.x][selectedPiece.y].piece;
       newBoard[selectedPiece.x][selectedPiece.y].piece = { type: null };
+      if (eat?.x && eat?.y) {
+        newBoard[eat.x][eat.y].piece = { type: null };
+      }
       sendMessage({ ...selectedPiece, oldX: newX, oldY: newY });
     }
     setSelectedPiece(null);
