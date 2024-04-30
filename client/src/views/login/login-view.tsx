@@ -32,7 +32,9 @@ const LoginView = () => {
       return document.getElementById("nameUser")?.focus();
     }
     createUser();
-    const urlRoom = codRoom ? codRoom : faker.string.sample(5);
+    const urlRoom = codRoom
+      ? codRoom
+      : faker.lorem.word({ length: { min: 5, max: 7 } });
     history(`/${urlRoom.toUpperCase()}`);
     setError(false);
   }
