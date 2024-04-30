@@ -26,6 +26,7 @@ const LoginView = () => {
         title: "Nome de Usuário",
         description: "Nome de usuário com tamanho incorreto",
         variant: "destructive",
+        duration: 1000,
       });
       setError(true);
       return document.getElementById("nameUser")?.focus();
