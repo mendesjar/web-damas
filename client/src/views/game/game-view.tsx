@@ -13,6 +13,7 @@ const GameView = () => {
   const [selectedPiece, setSelectedPiece] = useState<SelectedPiece | null>(
     null
   );
+  const [turn, setTurn] = useState<boolean>(true);
   const sessionService = new SessionService();
   const usuario = sessionService.getUsuario();
   const { toast } = useToast();
@@ -56,17 +57,24 @@ const GameView = () => {
   };
 
   const selectPiece = (rowIndex: number, columnIndex: number) => {
-    if (selectedPiece) {
-      const isValidMove = validateMove(rowIndex, columnIndex);
-      if (isValidMove) {
-        movePawn(rowIndex, columnIndex);
-      } else setSelectedPiece(null);
+    if (turn) {
+      if (selectedPiece) {
+        const isValidMove = validateMove(rowIndex, columnIndex);
+        if (isValidMove) {
+          movePawn(rowIndex, columnIndex);
+        } else setSelectedPiece(null);
+      } else {
+        setSelectedPiece({
+          x: rowIndex,
+          y: columnIndex,
+          oldX: rowIndex,
+          oldY: columnIndex,
+        });
+      }
     } else {
-      setSelectedPiece({
-        x: rowIndex,
-        y: columnIndex,
-        oldX: rowIndex,
-        oldY: columnIndex,
+      toast({
+        title: "Não é seu turno",
+        duration: 1000,
       });
     }
   };
@@ -170,6 +178,14 @@ const GameView = () => {
   useEffect(() => {
     function receivedMenssage(message: Message) {
       setBoard(message.board);
+      const turno = usuario.id !== message.id;
+      if (turno) {
+        toast({
+          title: "Seu turno",
+          duration: 1000,
+        });
+      }
+      setTurn(turno);
     }
     socket.on(`msgToClient:${path}`, (message: Message) => {
       receivedMenssage(message);
