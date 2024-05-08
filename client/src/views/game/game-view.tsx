@@ -108,9 +108,16 @@ const GameView = () => {
     toCol: number | undefined
   ) {
     if (toRow && toCol) {
-      const distance = Math.abs(fromRow - toRow) + Math.abs(fromCol - toCol);
-      if (distance === 4) return "eat";
-      if (distance === 2) return "move";
+      const deltaRow = toRow - fromRow;
+      const deltaCol = toCol - fromCol;
+
+      if (Math.abs(deltaRow) !== Math.abs(deltaCol)) {
+        return "noValid";
+      }
+
+      const distance = Math.abs(deltaRow);
+      if (distance === 2) return "eat";
+      if (distance === 1) return "move";
       return "noValid";
     }
   }
@@ -182,14 +189,14 @@ const GameView = () => {
   useEffect(() => {
     function receivedMenssage(message: Message) {
       setBoard(message.board);
-      const turno = usuario.id !== message.id;
+      /* const turno = usuario.id !== message.id;
       if (turno) {
         toast({
           title: "Seu turno",
           duration: 1000,
         });
       }
-      setTurn(turno);
+      setTurn(turno); */
     }
     socket.on(`msgToClient:${path}`, (message: Message) => {
       receivedMenssage(message);
