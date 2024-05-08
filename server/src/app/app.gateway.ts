@@ -22,8 +22,13 @@ export class AppGateway
 
   @SubscribeMessage("msgToServer")
   handleMessage(client: Socket, payload: payloadMessage): void {
-    const payloadDto = new PayloadMessageDto(payload);
-    this.server.emit(`msgToClient:${payloadDto.path}`, payload, client.id);
+    if (payload.path) {
+      const payloadDto = new PayloadMessageDto(payload);
+      client.join(payloadDto.path);
+      this.server
+        .to(payloadDto.path)
+        .emit(`msgToClient:${payloadDto.path}`, payload, client.id);
+    }
   }
 
   @SubscribeMessage("joinRoom")
