@@ -189,14 +189,14 @@ const GameView = () => {
   useEffect(() => {
     function receivedMenssage(message: Message) {
       setBoard(message.board);
-      /* const turno = usuario.id !== message.id;
+      const turno = usuario.id !== message.id;
       if (turno) {
         toast({
           title: "Seu turno",
           duration: 1000,
         });
       }
-      setTurn(turno); */
+      setTurn(turno);
     }
     socket.on(`msgToClient:${path}`, (message: Message) => {
       receivedMenssage(message);
