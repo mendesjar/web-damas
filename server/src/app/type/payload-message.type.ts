@@ -11,3 +11,13 @@ interface SelectedPiece {
   oldX: number;
   oldY: number;
 }
+
+export interface Player {
+  id: string;
+  name: string;
+  roomId: string;
+}
+
+export interface GameRoom {
+  id: string;
+}
