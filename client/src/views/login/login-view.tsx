@@ -2,14 +2,18 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { StorageHelper } from "@/helpers";
 import { faker } from "@faker-js/faker";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Toaster } from "@/components/ui/toaster";
 import { useToast } from "@/components/ui/use-toast";
+import { locales } from "@/resources";
+import { io } from "socket.io-client";
+import { SessionService } from "@/services";
 
 interface User {
   id: string;
-  nome: string;
+  name: string;
+  roomId: string;
 }
 
 const LoginView = () => {
@@ -18,9 +22,38 @@ const LoginView = () => {
   const [nameUser, setNameUser] = useState<string>("");
   const [error, setError] = useState<boolean>(false);
   const storageHelper = new StorageHelper();
+  const sessionService = new SessionService();
+  let roomId: string;
   const { toast } = useToast();
+  const connection =
+    locales.enviroment == "production"
+      ? locales.socketApi
+      : `${locales.socketHost}:${locales.socketPort}`;
 
-  function generateRoomGame(codRoom: string | null) {
+  const socket = io(connection, {
+    transports: ["websocket"],
+  });
+
+  function createRoomMessage(user: User) {
+    socket.emit("joinRoom", user);
+  }
+
+  useEffect(() => {
+    socket.on("playerList", (message: User[]) => {
+      if (roomId) {
+        let playerList = sessionService.getPlayerList();
+        if (playerList?.length) {
+          playerList.push(message);
+        } else {
+          playerList = message;
+        }
+        storageHelper.setLocal("playerList", JSON.stringify(playerList));
+        history(`/${roomId.toUpperCase()}`);
+      }
+    });
+  }, []);
+
+  async function generateRoomGame(codRoom: string | null) {
     if (nameUser?.length < 2) {
       toast({
         title: "Nome de Usuário",
@@ -31,20 +64,22 @@ const LoginView = () => {
       setError(true);
       return document.getElementById("nameUser")?.focus();
     }
-    createUser();
-    const urlRoom = codRoom
+    roomId = codRoom
       ? codRoom
       : faker.lorem.word({ length: { min: 5, max: 7 } });
-    history(`/${urlRoom.toUpperCase()}`);
+    const user = createUser(roomId);
+    createRoomMessage(user);
     setError(false);
   }
 
-  function createUser() {
+  function createUser(roomId: string) {
     const user: User = {
       id: faker.string.uuid(),
-      nome: nameUser,
+      name: nameUser,
+      roomId,
     };
     storageHelper.setLocal("user", JSON.stringify(user));
+    return user;
   }
 
   return (
