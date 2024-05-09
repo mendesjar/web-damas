@@ -11,6 +11,12 @@ class SessionService {
     const dados = JSON.parse(dadosSession);
     return dados;
   }
+
+  getPlayerList() {
+    const dadosSession: any = this.storageHelper.getLocal("playerList");
+    const dados = JSON.parse(dadosSession);
+    return dados;
+  }
 }
 
 export default SessionService;
