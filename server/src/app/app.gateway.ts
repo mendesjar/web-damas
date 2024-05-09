@@ -32,16 +32,13 @@ export class AppGateway
   }
 
   @SubscribeMessage("joinRoom")
-  handleJoinRoom(
-    client: Socket,
-    payload: { roomId: string; playerName: string }
-  ): void {
-    const { roomId, playerName } = payload;
-    const player: Player = { id: client.id, name: playerName, roomId };
+  handleJoinRoom(client: Socket, payload: Player): void {
+    const { id, roomId, name } = payload;
+    const player: Player = { id, roomId, name };
     //this.rooms.push({ id: roomId });
     this.players.push(player);
     client.join(roomId);
-    this.server.to(roomId).emit("playerList", this.getPlayerList(roomId));
+    this.server.emit("playerList", this.getPlayerList(roomId));
   }
 
   getPlayerList(roomId: string): Player[] {
@@ -53,14 +50,14 @@ export class AppGateway
   }
 
   handleConnection(client: Socket, payload: payloadMessage) {
-    const playerIndex = this.players.findIndex(
+   /*  const playerIndex = this.players.findIndex(
       (player) => player.id === payload.id
     );
     if (playerIndex !== -1) {
       const { roomId } = this.players[playerIndex];
       this.players.splice(playerIndex, 1);
       this.server.to(roomId).emit("playerList", this.getPlayerList(roomId));
-    }
+    } */
     this.logger.log(`Client connected: ${client.id}`);
   }
 
