@@ -39,7 +39,7 @@ const LoginView = () => {
   }
 
   useEffect(() => {
-    socket.on("playerList", (message: User[]) => {
+    socket.on(`playerList:${roomId}`, (message: User[]) => {
       if (roomId) {
         let playerList = sessionService.getPlayerList();
         if (playerList?.length) {
