@@ -38,7 +38,10 @@ export class AppGateway
     //this.rooms.push({ id: roomId });
     this.players.push(player);
     client.join(roomId);
-    this.server.emit("playerList", this.getPlayerList(roomId));
+    this.server.emit(
+      `playerList:${payload.roomId}`,
+      this.getPlayerList(roomId)
+    );
   }
 
   getPlayerList(roomId: string): Player[] {
@@ -50,7 +53,7 @@ export class AppGateway
   }
 
   handleConnection(client: Socket, payload: payloadMessage) {
-   /*  const playerIndex = this.players.findIndex(
+    /*  const playerIndex = this.players.findIndex(
       (player) => player.id === payload.id
     );
     if (playerIndex !== -1) {
