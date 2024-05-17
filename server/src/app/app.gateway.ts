@@ -46,10 +46,8 @@ export class AppGateway
       };
       this.rooms.push({ id: payload.roomId, playersId: [client.id] });
       this.players.push(player);
-      this.server.emit(
-        `playerList:${payload.roomId}`,
-        this.getPlayerList(payload.roomId)
-      );
+      const playerList = this.getPlayerList(payload.roomId);
+      this.server.emit(`playerList:${payload.roomId}`, playerList);
     }
   }
 
@@ -69,13 +67,11 @@ export class AppGateway
       } else return room;
     });
     this.players.push(player);
-    this.server.emit(
-      `playerList:${payload.roomId}`,
-      this.getPlayerList(payload.roomId)
-    );
+    const playerList = this.getPlayerList(payload.roomId);
+    this.server.emit(`playerList:${payload.roomId}`, playerList);
   }
 
-  getPlayerList(roomId: string): Player[] {
+  private getPlayerList(roomId: string): Player[] {
     return this.players.filter((player) => player.roomId === roomId);
   }
 
