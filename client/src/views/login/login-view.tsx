@@ -70,7 +70,7 @@ const LoginView = () => {
     const userTemp: User = {
       id: user.id,
       userName: user.userName,
-      roomId,
+      roomId: roomId.toUpperCase(),
     };
     storageHelper.setLocal("user", JSON.stringify(userTemp));
     return userTemp;
