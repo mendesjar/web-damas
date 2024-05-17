@@ -10,6 +10,7 @@ import {
 import { Server, Socket } from "socket.io";
 import { payloadMessage, Player, GameRoom } from "./type";
 import { PayloadMessageDto } from "./dto";
+import { strings } from "../resources";
 
 @WebSocketGateway()
 export class AppGateway
@@ -33,6 +34,7 @@ export class AppGateway
 
   @SubscribeMessage("createRoom")
   handleCreateRoom(client: Socket, payload: Player): void {
+    const { RESPONSE_ERROR } = strings;
     const createdRoom = this.rooms.find(
       (room) =>
         room.id === payload.roomId &&
@@ -46,33 +48,71 @@ export class AppGateway
       };
       this.rooms.push({ id: payload.roomId, playersId: [client.id] });
       this.players.push(player);
-      const playerList = this.getPlayerList(payload.roomId);
-      this.server.emit(`playerList:${payload.roomId}`, playerList);
+      this.server.emit(
+        `sendJoinCreateRoom:${client.id}`,
+        this.validGameRoom(true)
+      );
+    } else {
+      this.server.emit(
+        `sendJoinCreateRoom:${client.id}`,
+        this.validGameRoom(false, RESPONSE_ERROR)
+      );
     }
   }
 
   @SubscribeMessage("joinRoom")
   handleJoinRoom(client: Socket, payload: Player): void {
-    const player: Player = {
-      id: client.id,
-      userName: payload.userName,
-      roomId: payload.roomId,
-    };
-    this.rooms.map((room) => {
-      if (room.id === payload.roomId) {
-        return {
-          ...room,
-          playersId: room.playersId.push(client.id),
-        };
-      } else return room;
-    });
-    this.players.push(player);
-    const playerList = this.getPlayerList(payload.roomId);
-    this.server.emit(`playerList:${payload.roomId}`, playerList);
+    const { RESPONSE_ERROR } = strings;
+    const createdRoom = this.rooms.find(
+      (room) =>
+        room.id === payload.roomId &&
+        room.playersId.some((id) => id === client.id)
+    );
+    if (!createdRoom) {
+      const player: Player = {
+        id: client.id,
+        userName: payload.userName,
+        roomId: payload.roomId,
+      };
+      this.rooms.map((room) => {
+        if (room.id === payload.roomId) {
+          return {
+            ...room,
+            playersId: room.playersId.push(client.id),
+          };
+        } else return room;
+      });
+      this.players.push(player);
+      this.server.emit(
+        `sendJoinCreateRoom:${client.id}`,
+        this.validGameRoom(true)
+      );
+    } else {
+      this.server.emit(
+        `sendJoinCreateRoom:${client.id}`,
+        this.validGameRoom(false, RESPONSE_ERROR)
+      );
+    }
   }
 
-  private getPlayerList(roomId: string): Player[] {
-    return this.players.filter((player) => player.roomId === roomId);
+  private validGameRoom(valid: boolean, message?: string) {
+    return {
+      isValid: valid,
+      responseMessage: message,
+    };
+  }
+
+  @SubscribeMessage("getPlayerList")
+  getPlayerList(client: Socket, payload: any): void {
+    const valid = this.players.some(
+      (player) => player.id === client.id && player.roomId === payload.roomId
+    );
+    if (valid) {
+      const playerList = this.players.filter(
+        (player) => player.roomId === payload.roomId
+      );
+      this.server.emit(`playerList:${payload.roomId}`, playerList);
+    }
   }
 
   afterInit() {
