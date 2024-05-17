@@ -25,10 +25,7 @@ export class AppGateway
   handleMessage(client: Socket, payload: payloadMessage): void {
     if (payload.path) {
       const payloadDto = new PayloadMessageDto(payload);
-      client.join(payloadDto.path);
-      this.server
-        .to(payloadDto.path)
-        .emit(`msgToClient:${payloadDto.path}`, payload, client.id);
+      this.server.emit(`msgToClient:${payloadDto.path}`, payload);
     }
   }
 
@@ -38,23 +35,23 @@ export class AppGateway
     const createdRoom = this.rooms.find(
       (room) =>
         room.id === payload.roomId &&
-        room.playersId.some((id) => id === client.id)
+        room.playersId.some((id) => id === payload.id)
     );
     if (!createdRoom) {
       const player: Player = {
-        id: client.id,
+        id: payload.id,
         userName: payload.userName,
         roomId: payload.roomId,
       };
-      this.rooms.push({ id: payload.roomId, playersId: [client.id] });
+      this.rooms.push({ id: payload.roomId, playersId: [payload.id] });
       this.players.push(player);
       this.server.emit(
-        `sendJoinCreateRoom:${client.id}`,
+        `sendCreateRoom:${payload.id}`,
         this.validGameRoom(true)
       );
     } else {
       this.server.emit(
-        `sendJoinCreateRoom:${client.id}`,
+        `sendCreateRoom:${payload.id}`,
         this.validGameRoom(false, RESPONSE_ERROR)
       );
     }
@@ -66,11 +63,11 @@ export class AppGateway
     const createdRoom = this.rooms.find(
       (room) =>
         room.id === payload.roomId &&
-        room.playersId.some((id) => id === client.id)
+        room.playersId.some((id) => id === payload.id)
     );
     if (!createdRoom) {
       const player: Player = {
-        id: client.id,
+        id: payload.id,
         userName: payload.userName,
         roomId: payload.roomId,
       };
@@ -78,18 +75,15 @@ export class AppGateway
         if (room.id === payload.roomId) {
           return {
             ...room,
-            playersId: room.playersId.push(client.id),
+            playersId: room.playersId.push(payload.id),
           };
         } else return room;
       });
       this.players.push(player);
-      this.server.emit(
-        `sendJoinCreateRoom:${client.id}`,
-        this.validGameRoom(true)
-      );
+      this.server.emit(`sendJoinRoom:${payload.id}`, this.validGameRoom(true));
     } else {
       this.server.emit(
-        `sendJoinCreateRoom:${client.id}`,
+        `sendJoinRoom:${payload.id}`,
         this.validGameRoom(false, RESPONSE_ERROR)
       );
     }
@@ -105,7 +99,7 @@ export class AppGateway
   @SubscribeMessage("getPlayerList")
   getPlayerList(client: Socket, payload: any): void {
     const valid = this.players.some(
-      (player) => player.id === client.id && player.roomId === payload.roomId
+      (player) => player.id === payload.id && player.roomId === payload.roomId
     );
     if (valid) {
       const playerList = this.players.filter(
