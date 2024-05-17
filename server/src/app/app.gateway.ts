@@ -18,7 +18,7 @@ export class AppGateway
   @WebSocketServer() server: Server;
   private logger: Logger = new Logger("AppGateway");
   private players: Player[] = [];
-  //private rooms: GameRoom[] = [];
+  private rooms: GameRoom[] = [];
 
   @SubscribeMessage("msgToServer")
   handleMessage(client: Socket, payload: payloadMessage): void {
@@ -31,17 +31,26 @@ export class AppGateway
     }
   }
 
-  @SubscribeMessage("joinRoom")
-  handleJoinRoom(client: Socket, payload: Player): void {
-    const { id, roomId, name } = payload;
-    const player: Player = { id, roomId, name };
-    //this.rooms.push({ id: roomId });
-    this.players.push(player);
-    client.join(roomId);
-    this.server.emit(
-      `playerList:${payload.roomId}`,
-      this.getPlayerList(roomId)
+  @SubscribeMessage("createRoom")
+  handleCreateRoom(client: Socket, payload: Player): void {
+    const createdRoom = this.rooms.find(
+      (room) =>
+        room.id === payload.roomId &&
+        room.playersId.some((id) => id === client.id)
     );
+    if (!createdRoom) {
+      const player: Player = {
+        id: client.id,
+        userName: payload.userName,
+        roomId: payload.roomId,
+      };
+      this.rooms.push({ id: payload.roomId, playersId: [client.id] });
+      this.players.push(player);
+      this.server.emit(
+        `playerList:${payload.roomId}`,
+        this.getPlayerList(payload.roomId)
+      );
+    }
   }
 
   getPlayerList(roomId: string): Player[] {
@@ -53,18 +62,11 @@ export class AppGateway
   }
 
   handleConnection(client: Socket, payload: payloadMessage) {
-    /*  const playerIndex = this.players.findIndex(
-      (player) => player.id === payload.id
-    );
-    if (playerIndex !== -1) {
-      const { roomId } = this.players[playerIndex];
-      this.players.splice(playerIndex, 1);
-      this.server.to(roomId).emit("playerList", this.getPlayerList(roomId));
-    } */
     this.logger.log(`Client connected: ${client.id}`);
   }
 
   handleDisconnect(client: Socket) {
+    this.players = this.players.filter((player) => player.id !== client.id);
     this.logger.log(`Client disconected: ${client.id}`);
   }
 }
