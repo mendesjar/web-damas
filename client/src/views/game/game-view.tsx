@@ -1,12 +1,12 @@
 import { useEffect, useState } from "react";
-import { io } from "socket.io-client";
 import { Button } from "../../components/ui/button";
 import { Circle, CopySimple } from "@phosphor-icons/react";
 import { Toaster } from "@/components/ui/toaster";
 import { useToast } from "@/components/ui/use-toast";
 import { Board, Message, SelectedPiece } from "./interfaces";
 import { SessionService } from "../../services";
-import { locales } from "../../resources";
+import { StorageHelper } from "@/helpers";
+import { SocketCliente } from "@/external/socket.cliente";
 
 const GameView = () => {
   const [board, setBoard] = useState<Board[][]>([]);
@@ -15,17 +15,11 @@ const GameView = () => {
   );
   const [turn, setTurn] = useState<boolean>(true);
   const sessionService = new SessionService();
+  const storageHelper = new StorageHelper();
+  const socketCliente = new SocketCliente();
   const usuario = sessionService.getUsuario();
   const { toast } = useToast();
   const path = window.location.pathname.replace(/\s|\//g, "");
-  const connection =
-    locales.enviroment == "production"
-      ? locales.socketApi
-      : `${locales.socketHost}:${locales.socketPort}`;
-
-  const socket = io(connection, {
-    transports: ["websocket"],
-  });
 
   useEffect(() => {
     createBoard();
@@ -172,7 +166,7 @@ const GameView = () => {
     setSelectedPiece(null);
   };
 
-  function sendMessage(selectedPiece: SelectedPiece) {
+  async function sendMessage(selectedPiece: SelectedPiece) {
     const message: Message = {
       id: usuario.id,
       name: usuario.nome,
@@ -183,13 +177,18 @@ const GameView = () => {
       path,
       board,
     };
-    socket.emit("msgToServer", message);
+    await receivedMenssage(message);
   }
 
-  useEffect(() => {
-    function receivedMenssage(message: Message) {
+  async function receivedMenssage(message: Message) {
+    const result = await socketCliente.get(
+      "msgToServer",
+      `msgToClient:${path}`,
+      message
+    );
+    if (result.board) {
       setBoard(message.board);
-      const turno = usuario.id !== message.id;
+      const turno = usuario.id !== result.id;
       if (turno) {
         toast({
           title: "Seu turno",
@@ -198,9 +197,25 @@ const GameView = () => {
       }
       setTurn(turno);
     }
-    socket.on(`msgToClient:${path}`, (message: Message) => {
-      receivedMenssage(message);
-    });
+  }
+
+  async function getPlayerList() {
+    const result = await socketCliente.get(
+      "getPlayerList",
+      `playerList:${path}`,
+      usuario
+    );
+    if (result?.length) {
+      storageHelper.setLocal("playerList", JSON.stringify(result));
+    }
+  }
+
+  async function dadosIniciais() {
+    await getPlayerList();
+  }
+
+  useEffect(() => {
+    dadosIniciais();
   }, []);
 
   return (
