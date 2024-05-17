@@ -13,11 +13,12 @@ interface SelectedPiece {
 }
 
 export interface Player {
-  id: string;
-  name: string;
+  id?: string;
+  userName: string;
   roomId: string;
 }
 
 export interface GameRoom {
   id: string;
+  playersId: string[];
 }
