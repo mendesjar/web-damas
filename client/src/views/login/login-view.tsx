@@ -2,28 +2,29 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { StorageHelper } from "@/helpers";
 import { faker } from "@faker-js/faker";
-import { useEffect, useState } from "react";
+import { ChangeEvent, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Toaster } from "@/components/ui/toaster";
 import { useToast } from "@/components/ui/use-toast";
 import { locales } from "@/resources";
 import { io } from "socket.io-client";
-import { SessionService } from "@/services";
+// import { SessionService } from "@/services";
 
 interface User {
-  id: string;
-  name: string;
-  roomId: string;
+  id?: string;
+  userName: string;
+  roomId?: string;
 }
 
 const LoginView = () => {
   const history = useNavigate();
   const [codRoom, setCodRoom] = useState<string>("");
-  const [nameUser, setNameUser] = useState<string>("");
+  const [user, setUser] = useState<User>({
+    userName: "",
+  });
   const [error, setError] = useState<boolean>(false);
   const storageHelper = new StorageHelper();
-  const sessionService = new SessionService();
-  let roomId: string;
+  // const sessionService = new SessionService();
   const { toast } = useToast();
   const connection =
     locales.enviroment == "production"
@@ -34,27 +35,8 @@ const LoginView = () => {
     transports: ["websocket"],
   });
 
-  function createRoomMessage(user: User) {
-    socket.emit("joinRoom", user);
-  }
-
-  useEffect(() => {
-    socket.on(`playerList:${roomId}`, (message: User[]) => {
-      if (roomId) {
-        let playerList = sessionService.getPlayerList();
-        if (playerList?.length) {
-          playerList.push(message);
-        } else {
-          playerList = message;
-        }
-        storageHelper.setLocal("playerList", JSON.stringify(playerList));
-        history(`/${roomId.toUpperCase()}`);
-      }
-    });
-  }, []);
-
   async function generateRoomGame(codRoom: string | null) {
-    if (nameUser?.length < 2) {
+    if (user.userName?.length < 2) {
       toast({
         title: "Nome de Usuário",
         description: "Nome de usuário com tamanho incorreto",
@@ -64,22 +46,48 @@ const LoginView = () => {
       setError(true);
       return document.getElementById("nameUser")?.focus();
     }
-    roomId = codRoom
+    const cod = codRoom
       ? codRoom
       : faker.lorem.word({ length: { min: 5, max: 7 } });
-    const user = createUser(roomId);
-    createRoomMessage(user);
+    const userCreated = createUser(cod);
+
+    if (codRoom) joinRoomMessage(userCreated);
+    else createRoomMessage(userCreated);
+
+    history(`/${cod.toUpperCase()}`);
     setError(false);
   }
 
+  function createRoomMessage(user: User) {
+    socket.emit("createRoom", user);
+  }
+
+  function joinRoomMessage(user: User) {
+    socket.emit("joinRoom", user);
+  }
+
   function createUser(roomId: string) {
-    const user: User = {
-      id: faker.string.uuid(),
-      name: nameUser,
+    const userTemp: User = {
+      id: user.id,
+      userName: user.userName,
       roomId,
     };
-    storageHelper.setLocal("user", JSON.stringify(user));
-    return user;
+    storageHelper.setLocal("user", JSON.stringify(userTemp));
+    return userTemp;
+  }
+
+  useEffect(() => {
+    socket.on("connect", () => {
+      setUser({ ...user, id: socket.id });
+    });
+  }, []);
+
+  function handleInputChange(e: ChangeEvent<HTMLInputElement>) {
+    const userTemp = {
+      ...user,
+      [e.target.name]: e.target.value,
+    };
+    setUser(userTemp);
   }
 
   return (
@@ -87,14 +95,16 @@ const LoginView = () => {
       <div>
         <div className="w-full">
           <Input
-            id="nameUser"
+            id="userName"
+            name="userName"
             className="bg-primary text-primary-foreground"
             type="text"
             fullWidth={false}
             placeholder="Seu nome"
             required
+            value={user?.userName}
             error={error ? "Nome inválido" : undefined}
-            onChange={(e) => setNameUser(e.target.value)}
+            onChange={(e) => handleInputChange(e)}
           />
         </div>
         <hr className="w-full my-10" />
