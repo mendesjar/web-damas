@@ -22,8 +22,24 @@ const GameView = () => {
   const path = window.location.pathname.replace(/\s|\//g, "");
 
   useEffect(() => {
+    dadosIniciais();
     createBoard();
   }, []);
+
+  async function dadosIniciais() {
+    await getPlayerList();
+  }
+
+  async function getPlayerList() {
+    const result = await socketCliente.get(
+      "getPlayerList",
+      `playerList:${path}`,
+      usuario
+    );
+    if (result?.length) {
+      storageHelper.setLocal("playerList", JSON.stringify(result));
+    }
+  }
 
   const createBoard = () => {
     const newBoard: Board[][] = [];
@@ -198,25 +214,6 @@ const GameView = () => {
       setTurn(turno);
     }
   }
-
-  async function getPlayerList() {
-    const result = await socketCliente.get(
-      "getPlayerList",
-      `playerList:${path}`,
-      usuario
-    );
-    if (result?.length) {
-      storageHelper.setLocal("playerList", JSON.stringify(result));
-    }
-  }
-
-  async function dadosIniciais() {
-    await getPlayerList();
-  }
-
-  useEffect(() => {
-    dadosIniciais();
-  }, []);
 
   return (
     <>
