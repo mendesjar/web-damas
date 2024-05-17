@@ -53,6 +53,28 @@ export class AppGateway
     }
   }
 
+  @SubscribeMessage("joinRoom")
+  handleJoinRoom(client: Socket, payload: Player): void {
+    const player: Player = {
+      id: client.id,
+      userName: payload.userName,
+      roomId: payload.roomId,
+    };
+    this.rooms.map((room) => {
+      if (room.id === payload.roomId) {
+        return {
+          ...room,
+          playersId: room.playersId.push(client.id),
+        };
+      } else return room;
+    });
+    this.players.push(player);
+    this.server.emit(
+      `playerList:${payload.roomId}`,
+      this.getPlayerList(payload.roomId)
+    );
+  }
+
   getPlayerList(roomId: string): Player[] {
     return this.players.filter((player) => player.roomId === roomId);
   }
