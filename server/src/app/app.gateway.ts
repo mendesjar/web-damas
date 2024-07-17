@@ -81,6 +81,10 @@ export class AppGateway
       });
       this.players.push(player);
       this.server.emit(`sendJoinRoom:${payload.id}`, this.validGameRoom(true));
+      this.server.emit(
+        `playerList:${payload.roomId}`,
+        this.getPlayerList(client, payload)
+      );
     } else {
       this.server.emit(
         `sendJoinRoom:${payload.id}`,
