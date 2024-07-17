@@ -24,4 +24,20 @@ export class SocketCliente {
     socket.disconnect();
     return result;
   }
+  async on(on: string) {
+    const socket = io(connection, {
+      transports: ["websocket"],
+    });
+    const result: any = await new Promise(function (resolve) {
+      const reponseTimeout = setTimeout(() => {
+        resolve([]);
+      }, 20000);
+      socket.on(on, (mensagem: any) => {
+        clearTimeout(reponseTimeout);
+        resolve(mensagem);
+      });
+    });
+    socket.disconnect();
+    return result;
+  }
 }
