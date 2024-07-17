@@ -7,6 +7,7 @@ import { Board, Message, SelectedPiece } from "./interfaces";
 import { SessionService } from "../../services";
 import { StorageHelper } from "@/helpers";
 import { SocketCliente } from "@/external/socket.cliente";
+import { User } from "@/resources";
 
 const GameView = () => {
   const [board, setBoard] = useState<Board[][]>([]);
@@ -14,6 +15,7 @@ const GameView = () => {
     null
   );
   const [turn, setTurn] = useState<boolean>(true);
+  const [playersList, setPlayersList] = useState<User[]>([]);
   const sessionService = new SessionService();
   const storageHelper = new StorageHelper();
   const socketCliente = new SocketCliente();
@@ -38,6 +40,7 @@ const GameView = () => {
     );
     if (result?.length) {
       storageHelper.setLocal("playerList", JSON.stringify(result));
+      setPlayersList(result);
     }
   }
 
@@ -67,6 +70,12 @@ const GameView = () => {
   };
 
   const selectPiece = (rowIndex: number, columnIndex: number) => {
+    if (playersList.length <= 1) {
+      return toast({
+        title: "Aguarde Oponente",
+        duration: 1000,
+      });
+    }
     if (turn) {
       if (selectedPiece) {
         const isValidMove = validateMove(rowIndex, columnIndex);

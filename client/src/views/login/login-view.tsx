@@ -7,13 +7,8 @@ import { useNavigate } from "react-router-dom";
 import { Toaster } from "@/components/ui/toaster";
 import { useToast } from "@/components/ui/use-toast";
 import { SocketCliente } from "@/external/socket.cliente";
+import { User } from "@/resources";
 // import { SessionService } from "@/services";
-
-interface User {
-  id: string;
-  userName: string;
-  roomId?: string;
-}
 
 const LoginView = () => {
   const history = useNavigate();
