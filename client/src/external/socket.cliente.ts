@@ -24,6 +24,14 @@ export class SocketCliente {
     socket.disconnect();
     return result;
   }
+
+  async emit(emit: string, dadosEnvio: any) {
+    const socket = io(connection, {
+      transports: ["websocket"],
+    });
+    return socket.emit(emit, dadosEnvio);
+  }
+
   async on(on: string) {
     const socket = io(connection, {
       transports: ["websocket"],

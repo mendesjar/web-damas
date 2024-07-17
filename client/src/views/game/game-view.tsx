@@ -221,13 +221,13 @@ const GameView = () => {
   }
 
   async function receivedMenssage(message: Message) {
-    const result = await socketCliente.get(
-      "msgToServer",
-      `msgToClient:${path}`,
-      message
-    );
+    await socketCliente.emit("msgToServer", message);
+  }
+
+  async function busca() {
+    const result: Message = await socketCliente.on(`msgToClient:${path}`);
     if (result.board) {
-      setBoard(message.board);
+      setBoard(result.board);
       const turno = usuario.id !== result.id;
       if (turno) {
         toast({
@@ -238,6 +238,10 @@ const GameView = () => {
       setTurn(turno);
     }
   }
+
+  useEffect(() => {
+    busca();
+  }, []);
 
   return (
     <>
