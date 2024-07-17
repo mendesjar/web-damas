@@ -29,7 +29,22 @@ const GameView = () => {
   }, []);
 
   async function dadosIniciais() {
+    await getPlayerListLogado();
     await getPlayerList();
+  }
+
+  async function getPlayerListLogado() {
+    const result = await socketCliente.on(`playerList:${path}`);
+    if (result?.length) {
+      storageHelper.setLocal("playerList", JSON.stringify(result));
+      setPlayersList(result);
+      if (usuario.id == result[0].id) {
+        return toast({
+          title: "Oponente Logado",
+          duration: 1000,
+        });
+      }
+    }
   }
 
   async function getPlayerList() {
