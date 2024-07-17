@@ -140,7 +140,7 @@ const GameView = () => {
     fromCol: number,
     toRow: number | undefined,
     toCol: number | undefined
-  ) {
+  ): string | undefined {
     if (toRow && toCol) {
       const deltaRow = toRow - fromRow;
       const deltaCol = toCol - fromCol;
