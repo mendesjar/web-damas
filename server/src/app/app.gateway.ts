@@ -3,16 +3,16 @@ import {
   OnGatewayConnection,
   OnGatewayDisconnect,
   OnGatewayInit,
-  SubscribeMessage,
   WebSocketGateway,
   WebSocketServer,
 } from "@nestjs/websockets";
 import { Server, Socket } from "socket.io";
+import { locales } from "src/resources";
 
 const userSocketMap = new Map();
 @WebSocketGateway({
   cors: {
-    origin: "localhost:5173",
+    origin: locales.urlBase,
   },
 })
 export class SocketGateway
