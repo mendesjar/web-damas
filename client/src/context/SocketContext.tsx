@@ -1,6 +1,12 @@
 import { locales } from "@/resources";
 import { AuthSlice } from "@/store";
-import { createContext, ReactNode, useContext, useEffect, useRef } from "react";
+import {
+  createContext,
+  ReactNode,
+  useContext,
+  useEffect,
+  useState,
+} from "react";
 import { io } from "socket.io-client";
 import type { Socket } from "socket.io-client";
 
@@ -11,33 +17,31 @@ export const useSocket = () => {
 };
 
 export const SocketProvider = ({ children }: { children: ReactNode }) => {
-  const socket: any = useRef();
+  const [socket, setSocket] = useState<Socket | null>(null);
   const { userInfo } = AuthSlice();
-  const connection =
-    locales.enviroment == "production"
-      ? locales.socketApi
-      : `${locales.socketHost}:${locales.socketPort}`;
 
   useEffect(() => {
     if (userInfo) {
-      socket.current = io(connection, {
+      const newSocket = io(locales.serverUrl, {
         withCredentials: true,
         query: { userId: userInfo.id },
-        transports: ["websocket"],
       });
-      socket.current.on("connect", () => {
+      setSocket(newSocket);
+      newSocket.on("connect", () => {
         console.log("Conected to socket server");
       });
 
+      newSocket.on("received", (message: any) =>
+        console.log("message", message)
+      );
+
       return () => {
-        socket.current.disconnect();
+        newSocket.disconnect();
       };
     }
   }, [userInfo]);
 
   return (
-    <SocketContext.Provider value={socket.current}>
-      {children}
-    </SocketContext.Provider>
+    <SocketContext.Provider value={socket}>{children}</SocketContext.Provider>
   );
 };
