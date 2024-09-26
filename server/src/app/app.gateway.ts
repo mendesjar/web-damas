@@ -3,6 +3,7 @@ import {
   OnGatewayConnection,
   OnGatewayDisconnect,
   OnGatewayInit,
+  SubscribeMessage,
   WebSocketGateway,
   WebSocketServer,
 } from "@nestjs/websockets";
@@ -13,6 +14,7 @@ const userSocketMap = new Map();
 @WebSocketGateway({
   cors: {
     origin: locales.urlBase,
+    credentials: true,
   },
 })
 export class SocketGateway
@@ -34,6 +36,13 @@ export class SocketGateway
     } else {
       console.log(`User ID not provided during connection`);
     }
+  }
+
+  @SubscribeMessage("msgToServer")
+  handleMessage(client: Socket, payload): void {
+    console.log("Foi");
+
+    this.server.emit("received", payload);
   }
 
   handleDisconnect(client: Socket) {

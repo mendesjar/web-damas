@@ -6,7 +6,10 @@ const logger = new Logger("Main");
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-  app.enableCors();
+  app.enableCors({
+    origin: process.env.URL_BASE,
+    credentials: true,
+  });
   await app.listen(locales.port);
   logger.log(`gateways está executando na url ${await app.getUrl()}`);
 }
