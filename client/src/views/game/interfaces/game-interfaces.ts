@@ -1,5 +1,5 @@
 export interface Message extends SelectedPiece {
-  id: string;
+  userId: string;
   name: string;
   path?: string;
   board?: any;

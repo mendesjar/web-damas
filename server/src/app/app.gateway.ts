@@ -38,11 +38,9 @@ export class SocketGateway
     }
   }
 
-  @SubscribeMessage("msgToServer")
+  @SubscribeMessage("emitMovePiece")
   handleMessage(client: Socket, payload): void {
-    console.log("Foi");
-
-    this.server.emit("received", payload);
+    this.server.emit("receivedMovePiece", payload);
   }
 
   handleDisconnect(client: Socket) {

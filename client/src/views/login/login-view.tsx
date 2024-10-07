@@ -1,27 +1,26 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { StorageHelper } from "@/helpers";
 import { faker } from "@faker-js/faker";
 import { ChangeEvent, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Toaster } from "@/components/ui/toaster";
 import { useToast } from "@/components/ui/use-toast";
-import { SocketCliente } from "@/external/socket.cliente";
-import { User } from "@/resources";
+import { locales, User } from "@/resources";
+import { AppStore } from "@/store";
+import { useSocket } from "@/context/SocketContext";
 // import { SessionService } from "@/services";
 
 const LoginView = () => {
   const history = useNavigate();
+  const { setUserInfo } = AppStore();
   const [codRoom, setCodRoom] = useState<string>("");
+  const socket = useSocket();
   const [user, setUser] = useState<User>({
     id: faker.string.uuid(),
     userName: "",
   });
   const [error, setError] = useState<boolean>(false);
-  const storageHelper = new StorageHelper();
-  const socketCliente = new SocketCliente();
   const { toast } = useToast();
-
   async function generateRoomGame(codRoom: string | null) {
     if (user.userName?.length < 2) {
       toast({
@@ -36,16 +35,17 @@ const LoginView = () => {
     const cod = codRoom
       ? codRoom
       : faker.lorem.word({ length: { min: 5, max: 7 } });
-    const userCreated = createUser(cod);
+    /* const userCreated =  */ createUser(cod);
 
-    if (codRoom) joinRoomMessage(userCreated);
-    else createRoomMessage(userCreated);
+    /* if (codRoom) joinRoomMessage(userCreated);
+    else createRoomMessage(userCreated); */
+    history(`/${cod.toUpperCase()}`);
     setError(false);
   }
 
-  async function createRoomMessage(user: User) {
+  /*   async function createRoomMessage(user: User) {
     const result: { isValid: boolean; responseMessage?: string } =
-      await socketCliente.get("createRoom", `sendCreateRoom:${user.id}`, user);
+      await socket.get("createRoom", `sendCreateRoom:${user.id}`, user);
     if (result.isValid && user.roomId) {
       history(`/${user.roomId.toUpperCase()}`);
     } else {
@@ -55,11 +55,10 @@ const LoginView = () => {
         duration: 1000,
       });
     }
-  }
+  } */
 
-  async function joinRoomMessage(user: User) {
-    const result: { isValid: boolean; responseMessage?: string } =
-      await socketCliente.get("joinRoom", `sendJoinRoom:${user.id}`, user);
+  /*   async function joinRoomMessage(user: User) {
+    const result: { isValid: boolean; responseMessage?: string } = await socketCliente.get("joinRoom", `sendJoinRoom:${user.id}`, user);
     if (result.isValid && user.roomId) {
       history(`/${user.roomId.toUpperCase()}`);
     } else {
@@ -69,7 +68,7 @@ const LoginView = () => {
         duration: 1000,
       });
     }
-  }
+  } */
 
   function createUser(roomId: string) {
     const userTemp: User = {
@@ -77,7 +76,7 @@ const LoginView = () => {
       userName: user.userName,
       roomId: roomId.toUpperCase(),
     };
-    storageHelper.setLocal("user", JSON.stringify(userTemp));
+    setUserInfo(userTemp);
     return userTemp;
   }
 
@@ -125,10 +124,7 @@ const LoginView = () => {
             placeholder="Digite o código"
             onChange={(e) => setCodRoom(e.target.value)}
           />
-          <Button
-            className="bg-white hover:bg-slate-700 text-slate-900 hover:text-white"
-            onClick={() => generateRoomGame(codRoom)}
-          >
+          <Button className="bg-white hover:bg-slate-700 text-slate-900 hover:text-white">
             Entrar
           </Button>
         </div>

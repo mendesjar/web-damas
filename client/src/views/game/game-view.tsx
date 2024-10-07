@@ -4,60 +4,25 @@ import { Circle, CopySimple } from "@phosphor-icons/react";
 import { Toaster } from "@/components/ui/toaster";
 import { useToast } from "@/components/ui/use-toast";
 import { Board, Message, SelectedPiece } from "./interfaces";
-import { SessionService } from "../../services";
-import { StorageHelper } from "@/helpers";
-import { SocketCliente } from "@/external/socket.cliente";
 import { User } from "@/resources";
+import { AppStore } from "@/store";
+import { useSocket } from "@/context/SocketContext";
 
 const GameView = () => {
   const [board, setBoard] = useState<Board[][]>([]);
   const [selectedPiece, setSelectedPiece] = useState<SelectedPiece | null>(
     null
   );
-  const [turn, setTurn] = useState<boolean>(true);
-  const [playersList, setPlayersList] = useState<User[]>([]);
-  const sessionService = new SessionService();
-  const storageHelper = new StorageHelper();
-  const socketCliente = new SocketCliente();
-  const usuario = sessionService.getUsuario();
+  const { userInfo, selectedMoves } = AppStore();
+  const socket = useSocket();
+  // const [turn, setTurn] = useState<boolean>(true);
+  // const [playersList, setPlayersList] = useState<User[]>([]);
   const { toast } = useToast();
   const path = window.location.pathname.replace(/\s|\//g, "");
 
   useEffect(() => {
-    dadosIniciais();
     createBoard();
   }, []);
-
-  async function dadosIniciais() {
-    await getPlayerListLogado();
-    await getPlayerList();
-  }
-
-  async function getPlayerListLogado() {
-    const result = await socketCliente.on(`playerList:${path}`);
-    if (result?.length) {
-      storageHelper.setLocal("playerList", JSON.stringify(result));
-      setPlayersList(result);
-      if (usuario.id == result[0].id) {
-        return toast({
-          title: "Oponente Logado",
-          duration: 1000,
-        });
-      }
-    }
-  }
-
-  async function getPlayerList() {
-    const result = await socketCliente.get(
-      "getPlayerList",
-      `playerList:${path}`,
-      usuario
-    );
-    if (result?.length) {
-      storageHelper.setLocal("playerList", JSON.stringify(result));
-      setPlayersList(result);
-    }
-  }
 
   const createBoard = () => {
     const newBoard: Board[][] = [];
@@ -84,32 +49,35 @@ const GameView = () => {
     setBoard(newBoard);
   };
 
-  const selectPiece = (rowIndex: number, columnIndex: number) => {
-    if (playersList.length <= 1) {
-      return toast({
-        title: "Aguarde Oponente",
-        duration: 1000,
-      });
-    }
-    if (turn) {
-      if (selectedPiece) {
-        const isValidMove = validateMove(rowIndex, columnIndex);
-        if (isValidMove.valid) {
-          const move = isValidMove?.x ? isValidMove : undefined;
-          movePawn(rowIndex, columnIndex, move);
-        } else setSelectedPiece(null);
-      } else {
-        setSelectedPiece({
-          x: rowIndex,
-          y: columnIndex,
-          oldX: rowIndex,
-          oldY: columnIndex,
-        });
+  const selectPiece = (
+    rowIndex: number,
+    columnIndex: number,
+    selectedPiece: SelectedPiece | null,
+    messageReceived?: boolean
+  ) => {
+    if (selectedPiece) {
+      const isValidMove = validateMove(rowIndex, columnIndex);
+      if (isValidMove.valid) {
+        const move = isValidMove?.x ? isValidMove : undefined;
+        const board = movePawn(rowIndex, columnIndex, move, selectedPiece);
+        if (board) {
+          setBoard(board);
+          !messageReceived &&
+            sendMessage({
+              x: rowIndex,
+              y: columnIndex,
+              oldX: selectedPiece.oldX,
+              oldY: selectedPiece.oldY,
+            });
+        }
       }
+      return setSelectedPiece(null);
     } else {
-      toast({
-        title: "Não é seu turno",
-        duration: 1000,
+      setSelectedPiece({
+        x: rowIndex,
+        y: columnIndex,
+        oldX: rowIndex,
+        oldY: columnIndex,
       });
     }
   };
@@ -191,9 +159,10 @@ const GameView = () => {
   const movePawn = (
     newX: number,
     newY: number,
-    eat: { valid: boolean; x?: number; y?: number } | undefined
+    eat: { valid: boolean; x?: number; y?: number } | undefined,
+    selectedPiece: SelectedPiece
   ) => {
-    const newBoard = board;
+    const newBoard = [...board];
     if (selectedPiece) {
       newBoard[newX][newY].piece =
         newBoard[selectedPiece.x][selectedPiece.y].piece;
@@ -201,47 +170,43 @@ const GameView = () => {
       if (eat?.x && eat?.y) {
         newBoard[eat.x][eat.y].piece = { type: null };
       }
-      sendMessage({ ...selectedPiece, oldX: newX, oldY: newY });
+      return newBoard;
     }
-    setSelectedPiece(null);
   };
 
   async function sendMessage(selectedPiece: SelectedPiece) {
-    const message: Message = {
-      id: usuario.id,
-      name: usuario.nome,
+    if (!userInfo) return;
+    const message = {
+      userId: userInfo.id,
+      name: userInfo.userName,
       x: selectedPiece.x,
       y: selectedPiece.y,
       oldX: selectedPiece.oldX,
       oldY: selectedPiece.oldY,
-      path,
-      board,
     };
-    await receivedMenssage(message);
-  }
-
-  async function receivedMenssage(message: Message) {
-    await socketCliente.emit("msgToServer", message);
-  }
-
-  async function busca() {
-    const result: Message = await socketCliente.on(`msgToClient:${path}`);
-    if (result.board) {
-      setBoard(result.board);
-      const turno = usuario.id !== result.id;
-      if (turno) {
-        toast({
-          title: "Seu turno",
-          duration: 1000,
-        });
-      }
-      setTurn(turno);
-    }
+    socket?.emit("emitMovePiece", message);
   }
 
   useEffect(() => {
-    busca();
-  }, []);
+    if (selectedMoves?.length) {
+      const lastMove = selectedMoves.findLast((el) => el);
+      if (lastMove) {
+        if (userInfo?.id !== lastMove.userId) {
+          selectPiece(
+            lastMove.x,
+            lastMove.y,
+            {
+              x: lastMove.x,
+              y: lastMove.y,
+              oldX: lastMove.oldX,
+              oldY: lastMove.oldY,
+            },
+            true
+          );
+        }
+      }
+    }
+  }, [selectedMoves]);
 
   return (
     <>
@@ -269,7 +234,9 @@ const GameView = () => {
                             ? "bg-red-600"
                             : ""
                         } hover:bg-gray-600 rounded`}
-                        onClick={() => selectPiece(rowIndex, columnIndex)}
+                        onClick={() =>
+                          selectPiece(rowIndex, columnIndex, selectedPiece)
+                        }
                       >
                         {column.piece?.type === "pawn" && (
                           <Circle

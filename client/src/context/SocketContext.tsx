@@ -1,5 +1,5 @@
 import { locales } from "@/resources";
-import { AuthSlice } from "@/store";
+import { AppStore } from "@/store";
 import {
   createContext,
   ReactNode,
@@ -18,7 +18,7 @@ export const useSocket = () => {
 
 export const SocketProvider = ({ children }: { children: ReactNode }) => {
   const [socket, setSocket] = useState<Socket | null>(null);
-  const { userInfo } = AuthSlice();
+  const { userInfo } = AppStore();
 
   useEffect(() => {
     if (userInfo) {
@@ -31,9 +31,10 @@ export const SocketProvider = ({ children }: { children: ReactNode }) => {
         console.log("Conected to socket server");
       });
 
-      newSocket.on("received", (message: any) =>
-        console.log("message", message)
-      );
+      newSocket.on("receivedMovePiece", (messages: any) => {
+        const { setMoves } = AppStore.getState();
+        setMoves(messages);
+      });
 
       return () => {
         newSocket.disconnect();
