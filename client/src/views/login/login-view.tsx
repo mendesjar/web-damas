@@ -12,12 +12,14 @@ const LoginView = () => {
   const history = useNavigate();
   const { setUserInfo } = AppStore();
   const [codRoom, setCodRoom] = useState<string>("");
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<{ userName?: string | undefined } | null>(
+    null
+  );
   const [error, setError] = useState<boolean>(false);
   const { toast } = useToast();
 
   async function generateRoomGame(codRoom: string | null) {
-    if (!user) return;
+    if (!user?.userName) return;
     if (user.userName?.length < 2) {
       toast({
         title: "Nome de Usuário",
@@ -37,7 +39,7 @@ const LoginView = () => {
   }
 
   function createUser(roomId: string) {
-    if (!user) return;
+    if (!user?.userName) return;
     const userTemp: User = {
       id: faker.string.uuid(),
       userName: user.userName,
@@ -49,7 +51,7 @@ const LoginView = () => {
   }
 
   function handleInputChange(e: ChangeEvent<HTMLInputElement>) {
-    const userTemp: any = {
+    const userTemp = {
       ...user,
       [e.target.name]: e.target.value,
     };
