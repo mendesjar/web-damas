@@ -10,7 +10,7 @@ import {
 import { Server, Socket } from "socket.io";
 import { locales } from "src/resources";
 import { PayloadMessageDto } from "./dto";
-import { payloadMessage } from "./type";
+import { payloadMessage, Player } from "./type";
 
 const userSocketMap = new Map();
 @WebSocketGateway({
@@ -42,6 +42,7 @@ export class SocketGateway
         typeUser,
       });
       client.join(userConnetion.roomId);
+      this.server.to(client.id).emit("typeUser", typeUser);
       console.log(
         `User connecter: ${userConnetion.userId} with socket ID ${client.id}`
       );

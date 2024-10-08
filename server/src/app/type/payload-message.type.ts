@@ -12,7 +12,7 @@ interface SelectedPiece {
 }
 
 export interface Player {
-  id?: string;
+  userId?: string;
   userName: string;
   roomId: string;
 }

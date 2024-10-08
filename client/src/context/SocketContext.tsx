@@ -1,4 +1,4 @@
-import { locales } from "@/resources";
+import { locales, typeUser } from "@/resources";
 import { AppStore } from "@/store";
 import { Message } from "@/views/game/interfaces";
 import {
@@ -19,17 +19,26 @@ export const useSocket = () => {
 
 export const SocketProvider = ({ children }: { children: ReactNode }) => {
   const [socket, setSocket] = useState<Socket | null>(null);
-  const { userInfo, setMovement } = AppStore();
+  const { userInfo, setTypeUser, setMovement } = AppStore();
 
   useEffect(() => {
     if (userInfo) {
       const newSocket = io(locales.serverUrl, {
         withCredentials: true,
-        query: { userId: userInfo.id, roomId: userInfo.roomId },
+        query: userInfo,
       });
       setSocket(newSocket);
       newSocket.on("connect", () => {
         console.log("Conected to socket server");
+      });
+
+      /* newSocket.emit("verifyTypeUser", {
+        userId: userInfo.id,
+        roomId: userInfo.roomId,
+      }); */
+
+      newSocket.on("typeUser", (type: typeUser) => {
+        setTypeUser(type);
       });
 
       newSocket.on("receivedMovePieceList", (messages: any) => {

@@ -177,12 +177,10 @@ const GameView = () => {
     }
   };
 
-  console.log(userInfo);
-
   async function sendMessage(selectedPiece: SelectedPiece) {
     if (!userInfo) return;
     const message: Message = {
-      userId: userInfo.id,
+      userId: userInfo.userId,
       name: userInfo.userName,
       x: selectedPiece.x,
       y: selectedPiece.y,

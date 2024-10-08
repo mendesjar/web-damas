@@ -1,5 +1,5 @@
 export interface User {
-  id: string;
+  userId: string;
   userName: string;
   roomId: string;
   typeUser: string;

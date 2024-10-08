@@ -1,10 +1,12 @@
-import { User } from "@/resources";
+import { typeUser, User } from "@/resources";
 import { Message } from "@/views/game/interfaces";
 import { create } from "zustand";
 
 type Store = {
   userInfo: User | undefined;
   setUserInfo: (user: User) => void;
+  typeUser: typeUser;
+  setTypeUser: (type: typeUser) => void;
   selectedMoves: Message[];
   setMoves: (messages: any) => void;
   movement: Message | undefined;
@@ -19,6 +21,10 @@ export const AppStore = create<Store>()((set, get) => ({
   ...{
     movement: undefined,
     setMovement: (message: Message) => set({ movement: message }),
+  },
+  ...{
+    typeUser: "VISITOR",
+    setTypeUser: (type) => set({ typeUser: type }),
   },
   ...{
     selectedMoves: [],

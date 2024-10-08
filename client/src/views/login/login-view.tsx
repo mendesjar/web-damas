@@ -41,7 +41,7 @@ const LoginView = () => {
   function createUser(roomId: string) {
     if (!user?.userName) return;
     const userTemp: User = {
-      id: faker.string.uuid(),
+      userId: faker.string.uuid(),
       userName: user.userName,
       roomId: roomId.toUpperCase(),
       typeUser: "",
