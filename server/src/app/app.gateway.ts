@@ -33,16 +33,15 @@ export class SocketGateway
     const userConnetion: any = client.handshake.query;
 
     if (userConnetion.userId) {
-      userSocketMap.set(userConnetion.userId, client.id);
-      /* const messageResceived = userSocketMap.get("socketId");
       const userRooms = this.server.sockets.adapter.rooms.get(
         userConnetion.roomId
       );
       const typeUser = this.typeUser(userRooms);
-      userSocketMap["typeUser"] = typeUser;
- */
+      userSocketMap.set(userConnetion.userId, {
+        socketId: client.id,
+        typeUser,
+      });
       client.join(userConnetion.roomId);
-      // this.server.to(messageResceived).emit("typeUser", typeUser);
       console.log(
         `User connecter: ${userConnetion.userId} with socket ID ${client.id}`
       );
@@ -64,7 +63,7 @@ export class SocketGateway
   @SubscribeMessage("emitMovePiece")
   handleMessage(client: Socket, payload: payloadMessage): void {
     let userReceiveds = [];
-    for (const [userId, socketId] of userSocketMap.entries()) {
+    for (const [userId, { socketId }] of userSocketMap.entries()) {
       if (userId !== payload.userId) {
         userReceiveds.push(socketId);
       }
@@ -80,7 +79,7 @@ export class SocketGateway
     console.log(`Client disconected: ${client.id}`);
 
     const userConnetion: any = client.handshake.query;
-    for (const [userId, socketId] of userSocketMap.entries()) {
+    for (const [userId, { socketId }] of userSocketMap.entries()) {
       if (socketId === client.id) {
         client.leave(userConnetion.roomId);
         userSocketMap.delete(userId);
