@@ -5,23 +5,19 @@ import { ChangeEvent, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Toaster } from "@/components/ui/toaster";
 import { useToast } from "@/components/ui/use-toast";
-import { locales, User } from "@/resources";
+import { User } from "@/resources";
 import { AppStore } from "@/store";
-import { useSocket } from "@/context/SocketContext";
-// import { SessionService } from "@/services";
 
 const LoginView = () => {
   const history = useNavigate();
   const { setUserInfo } = AppStore();
   const [codRoom, setCodRoom] = useState<string>("");
-  const socket = useSocket();
-  const [user, setUser] = useState<User>({
-    id: faker.string.uuid(),
-    userName: "",
-  });
+  const [user, setUser] = useState<User | null>(null);
   const [error, setError] = useState<boolean>(false);
   const { toast } = useToast();
+
   async function generateRoomGame(codRoom: string | null) {
+    if (!user) return;
     if (user.userName?.length < 2) {
       toast({
         title: "Nome de Usuário",
@@ -35,42 +31,13 @@ const LoginView = () => {
     const cod = codRoom
       ? codRoom
       : faker.lorem.word({ length: { min: 5, max: 7 } });
-    /* const userCreated =  */ createUser(cod);
-
-    /* if (codRoom) joinRoomMessage(userCreated);
-    else createRoomMessage(userCreated); */
+    createUser(cod);
     history(`/${cod.toUpperCase()}`);
     setError(false);
   }
 
-  /*   async function createRoomMessage(user: User) {
-    const result: { isValid: boolean; responseMessage?: string } =
-      await socket.get("createRoom", `sendCreateRoom:${user.id}`, user);
-    if (result.isValid && user.roomId) {
-      history(`/${user.roomId.toUpperCase()}`);
-    } else {
-      toast({
-        title: "Error",
-        description: result.responseMessage,
-        duration: 1000,
-      });
-    }
-  } */
-
-  /*   async function joinRoomMessage(user: User) {
-    const result: { isValid: boolean; responseMessage?: string } = await socketCliente.get("joinRoom", `sendJoinRoom:${user.id}`, user);
-    if (result.isValid && user.roomId) {
-      history(`/${user.roomId.toUpperCase()}`);
-    } else {
-      toast({
-        title: "Error",
-        description: result.responseMessage,
-        duration: 1000,
-      });
-    }
-  } */
-
   function createUser(roomId: string) {
+    if (!user) return;
     const userTemp: User = {
       id: faker.string.uuid(),
       userName: user.userName,
@@ -81,7 +48,7 @@ const LoginView = () => {
   }
 
   function handleInputChange(e: ChangeEvent<HTMLInputElement>) {
-    const userTemp = {
+    const userTemp: any = {
       ...user,
       [e.target.name]: e.target.value,
     };
@@ -124,7 +91,10 @@ const LoginView = () => {
             placeholder="Digite o código"
             onChange={(e) => setCodRoom(e.target.value)}
           />
-          <Button className="bg-white hover:bg-slate-700 text-slate-900 hover:text-white">
+          <Button
+            className="bg-white hover:bg-slate-700 text-slate-900 hover:text-white"
+            onClick={() => generateRoomGame(codRoom)}
+          >
             Entrar
           </Button>
         </div>

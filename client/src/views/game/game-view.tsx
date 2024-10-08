@@ -187,6 +187,7 @@ const GameView = () => {
       y: selectedPiece.y,
       oldX: selectedPiece.oldX,
       oldY: selectedPiece.oldY,
+      roomId: path,
     };
     socket?.emit("emitMovePiece", message);
   }

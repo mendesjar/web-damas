@@ -43,7 +43,9 @@ export class SocketGateway
 
   @SubscribeMessage("emitMovePiece")
   handleMessage(client: Socket, payload): void {
-    this.server.to(payload.roomId).emit("receivedMovePiece", payload);
+    if (payload.roomId) {
+      this.server.to(payload.roomId).emit("receivedMovePiece", payload);
+    }
   }
 
   handleDisconnect(client: Socket) {
