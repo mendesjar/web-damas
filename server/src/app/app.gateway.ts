@@ -28,11 +28,14 @@ export class SocketGateway
   }
 
   handleConnection(client: Socket) {
-    const userId = client.handshake.query.userId;
+    const userConnetion = client.handshake.query;
 
-    if (userId) {
-      userSocketMap.set(userId, client.id);
-      console.log(`User connecter: ${userId} with socket ID ${client.id}`);
+    if (userConnetion.userId) {
+      userSocketMap.set(userConnetion.userId, client.id);
+      client.join(userConnetion.roomId);
+      console.log(
+        `User connecter: ${userConnetion.userId} with socket ID ${client.id}`
+      );
     } else {
       console.log(`User ID not provided during connection`);
     }
@@ -40,7 +43,7 @@ export class SocketGateway
 
   @SubscribeMessage("emitMovePiece")
   handleMessage(client: Socket, payload): void {
-    this.server.emit("receivedMovePiece", payload);
+    this.server.to(payload.roomId).emit("receivedMovePiece", payload);
   }
 
   handleDisconnect(client: Socket) {
