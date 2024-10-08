@@ -12,7 +12,7 @@ const GameView = () => {
   const [selectedPiece, setSelectedPiece] = useState<SelectedPiece | null>(
     null
   );
-  const { userInfo, moviment } = AppStore();
+  const { userInfo, movement } = AppStore();
   const socket = useSocket();
   // const [turn, setTurn] = useState<boolean>(true);
   // const [playersList, setPlayersList] = useState<User[]>([]);
@@ -194,20 +194,20 @@ const GameView = () => {
   }
 
   useEffect(() => {
-    if (moviment && "oldX" in moviment) {
+    if (movement && "oldX" in movement) {
       selectPiece(
-        moviment.x,
-        moviment.y,
+        movement.x,
+        movement.y,
         {
-          x: moviment.oldX,
-          y: moviment.oldY,
-          oldX: moviment.oldX,
-          oldY: moviment.oldY,
+          x: movement.oldX,
+          y: movement.oldY,
+          oldX: movement.oldX,
+          oldY: movement.oldY,
         },
         true
       );
     }
-  }, [moviment]);
+  }, [movement]);
 
   return (
     <>
