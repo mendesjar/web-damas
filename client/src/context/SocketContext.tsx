@@ -1,5 +1,6 @@
 import { locales } from "@/resources";
 import { AppStore } from "@/store";
+import { Message } from "@/views/game/interfaces";
 import {
   createContext,
   ReactNode,
@@ -18,7 +19,7 @@ export const useSocket = () => {
 
 export const SocketProvider = ({ children }: { children: ReactNode }) => {
   const [socket, setSocket] = useState<Socket | null>(null);
-  const { userInfo } = AppStore();
+  const { userInfo, setMovement } = AppStore();
 
   useEffect(() => {
     if (userInfo) {
@@ -31,9 +32,13 @@ export const SocketProvider = ({ children }: { children: ReactNode }) => {
         console.log("Conected to socket server");
       });
 
-      newSocket.on("receivedMovePiece", (messages: any) => {
+      newSocket.on("receivedMovePieceList", (messages: any) => {
         const { setMoves } = AppStore.getState();
         setMoves(messages);
+      });
+
+      newSocket.on("pieceMovement", (message: Message) => {
+        setMovement(message);
       });
 
       return () => {

@@ -1,8 +1,7 @@
 export interface Message extends SelectedPiece {
   userId: string;
   name: string;
-  path?: string;
-  board?: any;
+  roomId: string;
 }
 
 export interface Board {

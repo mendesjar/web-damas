@@ -42,6 +42,7 @@ const LoginView = () => {
       id: faker.string.uuid(),
       userName: user.userName,
       roomId: roomId.toUpperCase(),
+      typeUser: "",
     };
     setUserInfo(userTemp);
     return userTemp;

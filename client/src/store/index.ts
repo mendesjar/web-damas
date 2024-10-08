@@ -7,12 +7,18 @@ type Store = {
   setUserInfo: (user: User) => void;
   selectedMoves: Message[];
   setMoves: (messages: any) => void;
+  movement: Message | undefined;
+  setMovement: (message: Message) => void;
 };
 
 export const AppStore = create<Store>()((set, get) => ({
   ...{
     userInfo: undefined,
     setUserInfo: (userInfo: User) => set({ userInfo }),
+  },
+  ...{
+    movement: undefined,
+    setMovement: (message: Message) => set({ movement: message }),
   },
   ...{
     selectedMoves: [],
@@ -30,34 +36,3 @@ export const AppStore = create<Store>()((set, get) => ({
     },
   },
 }));
-
-/* const AuthSlice = (set: {
-  (
-    partial:
-      | Store
-      | Partial<Store>
-      | ((state: Store) => Store | Partial<Store>),
-    replace?: false
-  ): void;
-  (state: Store | ((state: Store) => Store), replace: true): void;
-  (arg0: { userInfo: User }): any;
-}) => ({
-  userInfo: undefined,
-  setUserInfo: (userInfo: User) => set({ userInfo }),
-});
-
-const MoveSlice = (set: any, get: any) => ({
-  selectedMoves: [],
-  setMoves: (messages: any) => {
-    const selectedMoves = get().selectedMoves;
-
-    set({
-      selectedMoves: [
-        ...selectedMoves,
-        {
-          ...messages,
-        },
-      ],
-    });
-  },
-}); */

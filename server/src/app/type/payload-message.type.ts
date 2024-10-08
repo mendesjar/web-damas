@@ -1,8 +1,7 @@
 export interface payloadMessage extends SelectedPiece {
-  id: string;
+  userId: string;
   name: string;
-  path?: string;
-  board?: any;
+  roomId: string;
 }
 
 interface SelectedPiece {

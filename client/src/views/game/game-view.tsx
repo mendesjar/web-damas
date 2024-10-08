@@ -4,7 +4,6 @@ import { Circle, CopySimple } from "@phosphor-icons/react";
 import { Toaster } from "@/components/ui/toaster";
 import { useToast } from "@/components/ui/use-toast";
 import { Board, Message, SelectedPiece } from "./interfaces";
-import { User } from "@/resources";
 import { AppStore } from "@/store";
 import { useSocket } from "@/context/SocketContext";
 
@@ -13,7 +12,7 @@ const GameView = () => {
   const [selectedPiece, setSelectedPiece] = useState<SelectedPiece | null>(
     null
   );
-  const { userInfo, selectedMoves } = AppStore();
+  const { userInfo, moviment } = AppStore();
   const socket = useSocket();
   // const [turn, setTurn] = useState<boolean>(true);
   // const [playersList, setPlayersList] = useState<User[]>([]);
@@ -178,9 +177,11 @@ const GameView = () => {
     }
   };
 
+  console.log(userInfo);
+
   async function sendMessage(selectedPiece: SelectedPiece) {
     if (!userInfo) return;
-    const message = {
+    const message: Message = {
       userId: userInfo.id,
       name: userInfo.userName,
       x: selectedPiece.x,
@@ -193,25 +194,20 @@ const GameView = () => {
   }
 
   useEffect(() => {
-    if (selectedMoves?.length) {
-      const lastMove = selectedMoves.findLast((el) => el);
-      if (lastMove) {
-        if (userInfo?.id !== lastMove.userId) {
-          selectPiece(
-            lastMove.x,
-            lastMove.y,
-            {
-              x: lastMove.oldX,
-              y: lastMove.oldY,
-              oldX: lastMove.oldX,
-              oldY: lastMove.oldY,
-            },
-            true
-          );
-        }
-      }
+    if (moviment && "oldX" in moviment) {
+      selectPiece(
+        moviment.x,
+        moviment.y,
+        {
+          x: moviment.oldX,
+          y: moviment.oldY,
+          oldX: moviment.oldX,
+          oldY: moviment.oldY,
+        },
+        true
+      );
     }
-  }, [selectedMoves]);
+  }, [moviment]);
 
   return (
     <>

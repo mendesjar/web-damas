@@ -9,6 +9,8 @@ import {
 } from "@nestjs/websockets";
 import { Server, Socket } from "socket.io";
 import { locales } from "src/resources";
+import { PayloadMessageDto } from "./dto";
+import { payloadMessage } from "./type";
 
 const userSocketMap = new Map();
 @WebSocketGateway({
@@ -28,11 +30,19 @@ export class SocketGateway
   }
 
   handleConnection(client: Socket) {
-    const userConnetion = client.handshake.query;
+    const userConnetion: any = client.handshake.query;
 
     if (userConnetion.userId) {
       userSocketMap.set(userConnetion.userId, client.id);
+      /* const messageResceived = userSocketMap.get("socketId");
+      const userRooms = this.server.sockets.adapter.rooms.get(
+        userConnetion.roomId
+      );
+      const typeUser = this.typeUser(userRooms);
+      userSocketMap["typeUser"] = typeUser;
+ */
       client.join(userConnetion.roomId);
+      // this.server.to(messageResceived).emit("typeUser", typeUser);
       console.log(
         `User connecter: ${userConnetion.userId} with socket ID ${client.id}`
       );
@@ -41,18 +51,38 @@ export class SocketGateway
     }
   }
 
+  private typeUser(userRooms: Set<string>) {
+    if (!userRooms) {
+      return "PRIMARY";
+    }
+    if (userRooms.size === 1) {
+      return "SECUNDARY";
+    }
+    return "VISITOR";
+  }
+
   @SubscribeMessage("emitMovePiece")
-  handleMessage(client: Socket, payload): void {
-    if (payload.roomId) {
-      this.server.to(payload.roomId).emit("receivedMovePiece", payload);
+  handleMessage(client: Socket, payload: payloadMessage): void {
+    let userReceiveds = [];
+    for (const [userId, socketId] of userSocketMap.entries()) {
+      if (userId !== payload.userId) {
+        userReceiveds.push(socketId);
+      }
+    }
+    const payloadDto = new PayloadMessageDto(payload);
+    if (payloadDto.roomId) {
+      this.server.to(payloadDto.roomId).emit("receivedMovePieceList", payload);
+      this.server.to(userReceiveds).emit("pieceMovement", payload);
     }
   }
 
   handleDisconnect(client: Socket) {
     console.log(`Client disconected: ${client.id}`);
 
+    const userConnetion: any = client.handshake.query;
     for (const [userId, socketId] of userSocketMap.entries()) {
       if (socketId === client.id) {
+        client.leave(userConnetion.roomId);
         userSocketMap.delete(userId);
         break;
       }
