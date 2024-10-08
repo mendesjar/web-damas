@@ -196,8 +196,8 @@ const GameView = () => {
             lastMove.x,
             lastMove.y,
             {
-              x: lastMove.x,
-              y: lastMove.y,
+              x: lastMove.oldX,
+              y: lastMove.oldY,
               oldX: lastMove.oldX,
               oldY: lastMove.oldY,
             },
