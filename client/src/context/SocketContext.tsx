@@ -24,7 +24,7 @@ export const SocketProvider = ({ children }: { children: ReactNode }) => {
     if (userInfo) {
       const newSocket = io(locales.serverUrl, {
         withCredentials: true,
-        query: { userId: userInfo.id },
+        query: { userId: userInfo.id, roomId: userInfo.roomId },
       });
       setSocket(newSocket);
       newSocket.on("connect", () => {
