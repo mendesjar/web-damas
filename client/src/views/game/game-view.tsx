@@ -56,7 +56,7 @@ const GameView = () => {
     messageReceived?: boolean
   ) => {
     if (selectedPiece) {
-      const isValidMove = validateMove(rowIndex, columnIndex);
+      const isValidMove = validateMove(rowIndex, columnIndex, selectedPiece);
       if (isValidMove.valid) {
         const move = isValidMove?.x ? isValidMove : undefined;
         const board = movePawn(rowIndex, columnIndex, move, selectedPiece);
@@ -82,7 +82,11 @@ const GameView = () => {
     }
   };
 
-  function validateMove(newX: number, newY: number) {
+  function validateMove(
+    newX: number,
+    newY: number,
+    selectedPiece: SelectedPiece | null
+  ) {
     if (board[newX][newY].color === "bg-white") return { valid: false };
     if (board[newX][newY].piece?.type === "pawn") return { valid: false };
     const adjacentMove = validateAdjacentMove(
