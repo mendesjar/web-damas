@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Button } from "../../components/ui/button";
-import { Circle, CopySimple } from "@phosphor-icons/react";
+import { Circle, CopySimple, User } from "@phosphor-icons/react";
 import { Toaster } from "@/components/ui/toaster";
 import { useToast } from "@/components/ui/use-toast";
 import { Board, Message, SelectedPiece } from "./interfaces";
@@ -12,7 +12,7 @@ const GameView = () => {
   const [selectedPiece, setSelectedPiece] = useState<SelectedPiece | null>(
     null
   );
-  const { userInfo, typeUser, movement } = AppStore();
+  const { userInfo, typeUser, startGame, movement } = AppStore();
   const socket = useSocket();
   const [turn, setTurn] = useState<boolean>(false);
   // const [playersList, setPlayersList] = useState<User[]>([]);
@@ -26,6 +26,16 @@ const GameView = () => {
   useEffect(() => {
     if (typeUser === "PRIMARY") setTurn(true);
   }, [typeUser]);
+
+  useEffect(() => {
+    if (startGame) {
+      toast({
+        title: "Que comece os Jogos ♟️",
+        duration: 1500,
+        variant: "destructive",
+      });
+    }
+  }, [startGame]);
 
   const createBoard = () => {
     const newBoard: Board[][] = [];
@@ -208,11 +218,13 @@ const GameView = () => {
 
   useEffect(() => {
     if (movement && "oldX" in movement) {
-      setTurn(true);
-      toast({
-        title: "Seu turno",
-        duration: 1000,
-      });
+      if (typeUser !== "VISITOR") {
+        setTurn(true);
+        toast({
+          title: "Seu turno",
+          duration: 1000,
+        });
+      }
       selectPiece(
         movement.x,
         movement.y,
@@ -227,9 +239,25 @@ const GameView = () => {
     }
   }, [movement]);
 
+  function startGameMovement(rowIndex: number, columnIndex: number) {
+    if (typeUser === "VISITOR") return;
+    if (!startGame) {
+      return toast({
+        title: "Espere seu adversário",
+        duration: 1500,
+      });
+    } else if (turn) selectPiece(rowIndex, columnIndex, selectedPiece);
+  }
+
   return (
     <>
       <main className="flex min-h-screen flex-col items-center justify-between p-24 bg-slate-800">
+        <div className="fixed h-10 top-5 left-10 right-10 xl:left-1/4 xl:right-1/4 md:left-60 md:right-60 sm:left-10 sm:right-1 text-slate-700">
+          <div className="w-1/3 h-full flex items-center rounded-full bg-white p-3">
+            <User className="mr-3" weight="fill" />
+            <h3>{userInfo?.userName}</h3>
+          </div>
+        </div>
         <div id="game">
           <table
             className={`flex flex-col justify-center items-center w-min mt-5 m-auto p-3 border rounded-md ${
@@ -258,11 +286,7 @@ const GameView = () => {
                             ? "bg-red-600"
                             : ""
                         } hover:bg-gray-600 rounded`}
-                        onClick={() => {
-                          if (typeUser === "VISITOR") return;
-                          if (turn)
-                            selectPiece(rowIndex, columnIndex, selectedPiece);
-                        }}
+                        onClick={() => startGameMovement(rowIndex, columnIndex)}
                       >
                         {column.piece?.type === "pawn" && (
                           <Circle
@@ -285,6 +309,7 @@ const GameView = () => {
           navigator.clipboard.writeText(path);
           toast({
             description: "Código copiado",
+            duration: 1500,
           });
         }}
       >

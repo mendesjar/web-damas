@@ -7,6 +7,8 @@ type Store = {
   setUserInfo: (user: User) => void;
   typeUser: typeUser;
   setTypeUser: (type: typeUser) => void;
+  startGame: boolean;
+  setStartGame: (startGame: boolean) => void;
   selectedMoves: Message[];
   setMoves: (messages: any) => void;
   movement: Message | undefined;
@@ -25,6 +27,10 @@ export const AppStore = create<Store>()((set, get) => ({
   ...{
     typeUser: "VISITOR",
     setTypeUser: (type) => set({ typeUser: type }),
+  },
+  ...{
+    startGame: false,
+    setStartGame: (valid) => set({ startGame: valid }),
   },
   ...{
     selectedMoves: [],

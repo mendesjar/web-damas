@@ -43,6 +43,9 @@ export class SocketGateway
       });
       client.join(userConnetion.roomId);
       this.server.to(client.id).emit("typeUser", typeUser);
+      if (typeUser === "SECUNDARY") {
+        this.server.to(userConnetion.roomId).emit("validStartGame", true);
+      }
       console.log(
         `User connecter: ${userConnetion.userId} with socket ID ${client.id}`
       );

@@ -19,7 +19,7 @@ export const useSocket = () => {
 
 export const SocketProvider = ({ children }: { children: ReactNode }) => {
   const [socket, setSocket] = useState<Socket | null>(null);
-  const { userInfo, setTypeUser, setMovement } = AppStore();
+  const { userInfo, setTypeUser, setStartGame, setMovement } = AppStore();
 
   useEffect(() => {
     if (userInfo) {
@@ -32,16 +32,15 @@ export const SocketProvider = ({ children }: { children: ReactNode }) => {
         console.log("Conected to socket server");
       });
 
-      /* newSocket.emit("verifyTypeUser", {
-        userId: userInfo.id,
-        roomId: userInfo.roomId,
-      }); */
+      newSocket.on("validStartGame", (idValid: boolean) => {
+        setStartGame(idValid);
+      });
 
       newSocket.on("typeUser", (type: typeUser) => {
         setTypeUser(type);
       });
 
-      newSocket.on("receivedMovePieceList", (messages: any) => {
+      newSocket.on("receivedMovePieceList", (messages: Message) => {
         const { setMoves } = AppStore.getState();
         setMoves(messages);
       });
