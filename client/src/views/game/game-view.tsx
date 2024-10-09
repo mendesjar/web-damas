@@ -94,7 +94,13 @@ const GameView = () => {
     newY: number,
     selectedPiece: SelectedPiece | null
   ) {
-    if (board[newX][newY].color === "bg-white") return { valid: false };
+    if (
+      board[newX][newY].color === "bg-white" ||
+      (selectedPiece &&
+        board[selectedPiece?.x][selectedPiece?.y].color === "bg-black" &&
+        !board[selectedPiece?.x][selectedPiece?.y].piece?.type)
+    )
+      return { valid: false };
     if (board[newX][newY].piece?.type === "pawn") return { valid: false };
     const adjacentMove = validateAdjacentMove(
       newX,
