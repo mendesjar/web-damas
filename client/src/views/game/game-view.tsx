@@ -6,6 +6,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { Board, Message, SelectedPiece } from "./interfaces";
 import { AppStore } from "@/store";
 import { useSocket } from "@/context/SocketContext";
+import { useNavigate } from "react-router-dom";
 
 const GameView = () => {
   const [board, setBoard] = useState<Board[][]>([]);
@@ -14,10 +15,17 @@ const GameView = () => {
   );
   const { userInfo, typeUser, startGame, movement } = AppStore();
   const socket = useSocket();
+  const navigate = useNavigate();
   const [turn, setTurn] = useState<boolean>(false);
   // const [playersList, setPlayersList] = useState<User[]>([]);
   const { toast } = useToast();
   const path = window.location.pathname.replace(/\s|\//g, "");
+
+  useEffect(() => {
+    if (!userInfo) {
+      navigate("/");
+    }
+  }, [userInfo]);
 
   useEffect(() => {
     createBoard();
