@@ -14,7 +14,7 @@ const GameView = () => {
   );
   const { userInfo, typeUser, movement } = AppStore();
   const socket = useSocket();
-  // const [turn, setTurn] = useState<boolean>(true);
+  const [turn, setTurn] = useState<boolean>(false);
   // const [playersList, setPlayersList] = useState<User[]>([]);
   const { toast } = useToast();
   const path = window.location.pathname.replace(/\s|\//g, "");
@@ -22,6 +22,10 @@ const GameView = () => {
   useEffect(() => {
     createBoard();
   }, []);
+
+  useEffect(() => {
+    if (typeUser === "PRIMARY") setTurn(true);
+  }, [typeUser]);
 
   const createBoard = () => {
     const newBoard: Board[][] = [];
@@ -193,10 +197,12 @@ const GameView = () => {
       roomId: path,
     };
     socket?.emit("emitMovePiece", message);
+    setTurn(false);
   }
 
   useEffect(() => {
     if (movement && "oldX" in movement) {
+      setTurn(true);
       selectPiece(
         movement.x,
         movement.y,
@@ -242,10 +248,11 @@ const GameView = () => {
                             ? "bg-red-600"
                             : ""
                         } hover:bg-gray-600 rounded`}
-                        onClick={() =>
-                          typeUser !== "VISITOR" &&
-                          selectPiece(rowIndex, columnIndex, selectedPiece)
-                        }
+                        onClick={() => {
+                          if (typeUser === "VISITOR") return;
+                          if (turn)
+                            selectPiece(rowIndex, columnIndex, selectedPiece);
+                        }}
                       >
                         {column.piece?.type === "pawn" && (
                           <Circle

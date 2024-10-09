@@ -74,7 +74,8 @@ export class SocketGateway
     const payloadDto = new PayloadMessageDto(payload);
     if (payloadDto.roomId) {
       this.server.to(payloadDto.roomId).emit("receivedMovePieceList", payload);
-      this.server.to(userReceiveds).emit("pieceMovement", payload);
+      if (userReceiveds?.length)
+        this.server.to(userReceiveds).emit("pieceMovement", payload);
     }
   }
 
