@@ -12,7 +12,7 @@ const GameView = () => {
   const [selectedPiece, setSelectedPiece] = useState<SelectedPiece | null>(
     null
   );
-  const { userInfo, movement } = AppStore();
+  const { userInfo, typeUser, movement } = AppStore();
   const socket = useSocket();
   // const [turn, setTurn] = useState<boolean>(true);
   // const [playersList, setPlayersList] = useState<User[]>([]);
@@ -54,6 +54,7 @@ const GameView = () => {
     selectedPiece: SelectedPiece | null,
     messageReceived?: boolean
   ) => {
+    if (typeUser === "VISITOR") return;
     if (selectedPiece) {
       const isValidMove = validateMove(rowIndex, columnIndex, selectedPiece);
       if (isValidMove.valid) {
@@ -72,6 +73,9 @@ const GameView = () => {
       }
       return setSelectedPiece(null);
     } else {
+      const colorPiece = board[rowIndex][columnIndex].piece?.color;
+      if (colorPiece === "text-amber-800" && typeUser === "SECUNDARY") return;
+      if (colorPiece === "text-orange-200" && typeUser === "PRIMARY") return;
       setSelectedPiece({
         x: rowIndex,
         y: columnIndex,
@@ -212,8 +216,13 @@ const GameView = () => {
       <main className="flex min-h-screen flex-col items-center justify-between p-24 bg-slate-800">
         <div id="game">
           <table
-            className="flex flex-col justify-center items-center w-min mt-5 m-auto p-3 border rounded-md"
+            className={`flex flex-col justify-center items-center w-min mt-5 m-auto p-3 border rounded-md ${
+              typeUser === "PRIMARY" || typeUser === "VISITOR"
+                ? "rotate-0"
+                : "rotate-180"
+            }`}
             onContextMenu={(e) => e.preventDefault()}
+            onClick={(e) => typeUser === "VISITOR" && e.preventDefault()}
           >
             <tbody>
               {board.map((row, rowIndex) => (
@@ -234,6 +243,7 @@ const GameView = () => {
                             : ""
                         } hover:bg-gray-600 rounded`}
                         onClick={() =>
+                          typeUser !== "VISITOR" &&
                           selectPiece(rowIndex, columnIndex, selectedPiece)
                         }
                       >

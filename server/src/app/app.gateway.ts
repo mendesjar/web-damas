@@ -64,11 +64,13 @@ export class SocketGateway
   @SubscribeMessage("emitMovePiece")
   handleMessage(client: Socket, payload: payloadMessage): void {
     let userReceiveds = [];
-    for (const [userId, { socketId }] of userSocketMap.entries()) {
+    let typeUserMessage = null;
+    for (const [userId, { socketId, typeUser }] of userSocketMap.entries()) {
       if (userId !== payload.userId) {
         userReceiveds.push(socketId);
-      }
+      } else typeUserMessage = typeUser;
     }
+    if (typeUserMessage === "VISITOR") return;
     const payloadDto = new PayloadMessageDto(payload);
     if (payloadDto.roomId) {
       this.server.to(payloadDto.roomId).emit("receivedMovePieceList", payload);
