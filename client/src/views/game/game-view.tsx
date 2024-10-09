@@ -143,8 +143,8 @@ const GameView = () => {
     fromCol: number,
     toRow: number | undefined,
     toCol: number | undefined
-  ): string | undefined {
-    if (toRow && toCol) {
+  ): string {
+    if (toRow != undefined && toCol != undefined) {
       const deltaRow = toRow - fromRow;
       const deltaCol = toCol - fromCol;
 
@@ -155,8 +155,8 @@ const GameView = () => {
       const distance = Math.abs(deltaRow);
       if (distance === 2) return "eat";
       if (distance === 1) return "move";
-      return "noValid";
     }
+    return "noValid";
   }
 
   const verifyPawnBetweenPieces = (
