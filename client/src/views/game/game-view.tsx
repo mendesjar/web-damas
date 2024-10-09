@@ -209,6 +209,10 @@ const GameView = () => {
   useEffect(() => {
     if (movement && "oldX" in movement) {
       setTurn(true);
+      toast({
+        title: "Seu turno",
+        duration: 1000,
+      });
       selectPiece(
         movement.x,
         movement.y,
