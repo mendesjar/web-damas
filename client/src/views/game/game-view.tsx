@@ -254,13 +254,13 @@ const GameView = () => {
   return (
     <>
       <main className="flex min-h-screen flex-col items-center justify-between p-24 bg-slate-800">
-        <div className="fixed flex justify-between items-center h-10 top-5 left-10 right-10 xl:left-1/4 xl:right-1/4 md:left-60 md:right-60 sm:left-10 sm:right-1 text-slate-700">
-          <div className="w-1/3 h-full flex items-center rounded-full bg-white p-3">
-            <User className="mr-3" weight="fill" />
+        <div className="fixed flex justify-between items-center h-10 top-5 left-10 right-10 xl:left-1/4 xl:right-1/4 md:left-60 md:right-60 sm:left-10 sm:right-1 text-white">
+          <div className="w-1/3 h-full flex items-center rounded-md bg-slate-900 p-3">
+            <User className="mr-3 text-slate-700" weight="fill" />
             <h3>{userInfo?.userName}</h3>
           </div>
           {typeUser !== "VISITOR" && (
-            <div className="flex items-center gap-x-2 text-white">
+            <div className="flex items-center gap-x-2">
               <h3>{turn ? "Sua vez" : "Adversário batendo cabeça"}</h3>
               <Circle
                 className={`${
