@@ -73,7 +73,6 @@ export class SocketGateway
         userReceiveds.push(socketId);
       } else typeUserMessage = typeUser;
     }
-    if (typeUserMessage === "VISITOR") return;
     const payloadDto = new PayloadMessageDto(payload);
     if (payloadDto.roomId) {
       this.server.to(payloadDto.roomId).emit("receivedMovePieceList", payload);

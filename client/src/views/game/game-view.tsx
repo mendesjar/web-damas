@@ -164,7 +164,7 @@ const GameView = () => {
     start: [number | undefined, number | undefined],
     end: [number, number]
   ): { valid: boolean; x?: number; y?: number } => {
-    if (start[0] && start[1]) {
+    if (start[0] != undefined && start[1] != undefined) {
       const oldSquare = board[start[0]][start[1]];
       const dx = end[0] - start[0];
       const dy = end[1] - start[1];
@@ -260,7 +260,7 @@ const GameView = () => {
   return (
     <>
       <main className="flex min-h-screen flex-col items-center justify-between p-24 bg-slate-800">
-        <div className="fixed h-10 top-5 left-10 right-10 xl:left-1/4 xl:right-1/4 md:left-60 md:right-60 sm:left-10 sm:right-1 text-slate-700">
+        <div className="fixed flex justify-between items-center h-10 top-5 left-10 right-10 xl:left-1/4 xl:right-1/4 md:left-60 md:right-60 sm:left-10 sm:right-1 text-slate-700">
           <div className="w-1/3 h-full flex items-center rounded-full bg-white p-3">
             <User className="mr-3" weight="fill" />
             <h3>{userInfo?.userName}</h3>
