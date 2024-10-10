@@ -226,13 +226,7 @@ const GameView = () => {
 
   useEffect(() => {
     if (movement && "oldX" in movement) {
-      if (typeUser !== "VISITOR") {
-        setTurn(true);
-        toast({
-          title: "Seu turno",
-          duration: 1000,
-        });
-      }
+      if (typeUser !== "VISITOR") setTurn(true);
       selectPiece(
         movement.x,
         movement.y,
@@ -265,6 +259,17 @@ const GameView = () => {
             <User className="mr-3" weight="fill" />
             <h3>{userInfo?.userName}</h3>
           </div>
+          {typeUser !== "VISITOR" && (
+            <div className="flex items-center gap-x-2 text-white">
+              <h3>{turn ? "Sua vez" : "Adversário batendo cabeça"}</h3>
+              <Circle
+                className={`${
+                  turn ? "text-green-500" : "text-red-500"
+                } animate-pulse`}
+                weight="fill"
+              />
+            </div>
+          )}
         </div>
         <div id="game">
           <table
