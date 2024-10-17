@@ -9,7 +9,7 @@ import {
 } from "@nestjs/websockets";
 import { Server, Socket } from "socket.io";
 import { locales } from "src/resources";
-import { PayloadMessageDto } from "./dto";
+import { PayloadMessageDto, PayloadMovementDto } from "./dto";
 import { payloadMessage, Player } from "./type";
 
 const userSocketMap = new Map();
@@ -39,12 +39,21 @@ export class SocketGateway
       const typeUser = this.typeUser(userRooms);
       userSocketMap.set(userConnetion.userId, {
         socketId: client.id,
+        userName: userConnetion.userName,
         typeUser,
       });
       client.join(userConnetion.roomId);
       this.server.to(client.id).emit("typeUser", typeUser);
       if (typeUser === "SECUNDARY") {
-        this.server.to(userConnetion.roomId).emit("validStartGame", true);
+        const usersStartGame = this.startGame(
+          userRooms,
+          userConnetion.userName,
+          client.id
+        );
+        this.server.to(userConnetion.roomId).emit("validStartGame", {
+          isValid: true,
+          users: usersStartGame,
+        });
       }
       console.log(
         `User connecter: ${userConnetion.userId} with socket ID ${client.id}`
@@ -52,6 +61,21 @@ export class SocketGateway
     } else {
       console.log(`User ID not provided during connection`);
     }
+  }
+
+  private startGame(
+    userRooms: Set<string>,
+    userSecundaryName: string,
+    clientId: string
+  ) {
+    const differentKey = Array.from(userRooms).find((key) => key !== clientId);
+    const primaryUser = Array.from(userSocketMap).find(
+      (key) => key[1]["socketId"] === differentKey
+    );
+    return {
+      primary: userSecundaryName,
+      secundary: primaryUser[1]["userName"],
+    };
   }
 
   private typeUser(userRooms: Set<string>) {
@@ -75,9 +99,12 @@ export class SocketGateway
     }
     const payloadDto = new PayloadMessageDto(payload);
     if (payloadDto.roomId) {
-      this.server.to(payloadDto.roomId).emit("receivedMovePieceList", payload);
+      const payloadListMove = new PayloadMovementDto(payload);
+      this.server
+        .to(payloadDto.roomId)
+        .emit("receivedMovePieceList", payloadListMove);
       if (userReceiveds?.length)
-        this.server.to(userReceiveds).emit("pieceMovement", payload);
+        this.server.to(userReceiveds).emit("pieceMovement", payloadDto);
     }
   }
 

@@ -1,1 +1,6 @@
-export { payloadMessage, Player, GameRoom } from "./payload-message.type";
+export {
+  payloadMessage,
+  Player,
+  GameRoom,
+  Movement,
+} from "./payload-message.type";

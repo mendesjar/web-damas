@@ -1,6 +1,6 @@
 import { locales, typeUser } from "@/resources";
 import { AppStore } from "@/store";
-import { Message } from "@/views/game/interfaces";
+import { Message, Movement } from "@/views/game/interfaces";
 import {
   createContext,
   ReactNode,
@@ -19,7 +19,8 @@ export const useSocket = () => {
 
 export const SocketProvider = ({ children }: { children: ReactNode }) => {
   const [socket, setSocket] = useState<Socket | null>(null);
-  const { userInfo, setTypeUser, setStartGame, setMovement } = AppStore();
+  const { userInfo, setOpponentName, setTypeUser, setStartGame, setMovement } =
+    AppStore();
 
   useEffect(() => {
     if (userInfo) {
@@ -32,15 +33,26 @@ export const SocketProvider = ({ children }: { children: ReactNode }) => {
         console.log("Conected to socket server");
       });
 
-      newSocket.on("validStartGame", (idValid: boolean) => {
-        setStartGame(idValid);
-      });
+      newSocket.on(
+        "validStartGame",
+        (startGame: {
+          users: { primary: string; secundary: string };
+          isValid: boolean;
+        }) => {
+          const opponentName =
+            startGame.users.primary !== userInfo.userName
+              ? startGame.users.primary
+              : startGame.users.secundary;
+          setOpponentName(opponentName);
+          setStartGame(startGame.isValid);
+        }
+      );
 
       newSocket.on("typeUser", (type: typeUser) => {
         setTypeUser(type);
       });
 
-      newSocket.on("receivedMovePieceList", (messages: Message) => {
+      newSocket.on("receivedMovePieceList", (messages: Movement) => {
         const { setMoves } = AppStore.getState();
         setMoves(messages);
       });

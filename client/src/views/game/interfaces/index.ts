@@ -1,1 +1,7 @@
-export type { Board, Message, Payload, SelectedPiece } from "./game-interfaces";
+export type {
+  Board,
+  Message,
+  Payload,
+  SelectedPiece,
+  Movement,
+} from "./game-interfaces";

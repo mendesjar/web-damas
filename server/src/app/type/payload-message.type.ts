@@ -21,3 +21,7 @@ export interface GameRoom {
   id: string;
   playersId: string[];
 }
+
+export interface Movement extends SelectedPiece {
+  senderUserId: string;
+}

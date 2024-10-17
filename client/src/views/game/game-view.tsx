@@ -13,7 +13,7 @@ const GameView = () => {
   const [selectedPiece, setSelectedPiece] = useState<SelectedPiece | null>(
     null
   );
-  const { userInfo, typeUser, startGame, movement } = AppStore();
+  const { userInfo, opponentName, typeUser, startGame, movement } = AppStore();
   const socket = useSocket();
   const navigate = useNavigate();
   const [turn, setTurn] = useState<boolean>(false);
@@ -255,21 +255,22 @@ const GameView = () => {
     <>
       <main className="flex min-h-screen flex-col items-center justify-between p-24 bg-slate-800">
         <div className="fixed flex justify-between items-center h-10 top-5 left-10 right-10 xl:left-1/4 xl:right-1/4 md:left-60 md:right-60 sm:left-10 sm:right-1 text-white">
-          <div className="w-1/3 h-full flex items-center rounded-md bg-slate-900 p-3">
+          <div className="h-full flex items-center rounded-md bg-slate-900 px-8 py-3">
             <User className="mr-3 text-slate-700" weight="fill" />
-            <h3>{userInfo?.userName}</h3>
+            <h3>Eu: {userInfo?.userName}</h3>
+            {opponentName && <h3>&nbsp;| Oponente: {opponentName}</h3>}
           </div>
-          {typeUser !== "VISITOR" && (
-            <div className="flex items-center gap-x-2">
-              <h3>{turn ? "Sua vez" : "Adversário batendo cabeça"}</h3>
-              <Circle
-                className={`${
-                  turn ? "text-green-500" : "text-red-500"
-                } animate-pulse`}
-                weight="fill"
-              />
-            </div>
-          )}
+          {/* {typeUser !== "VISITOR" && ( */}
+          <div className="flex items-center gap-x-2">
+            <h3>{turn ? "Sua vez" : "Adversário batendo cabeça"}</h3>
+            <Circle
+              className={`${
+                turn ? "text-green-500" : "text-red-500"
+              } animate-pulse`}
+              weight="fill"
+            />
+          </div>
+          {/* )} */}
         </div>
         <div id="game">
           <table

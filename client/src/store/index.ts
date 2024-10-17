@@ -1,16 +1,18 @@
 import { typeUser, User } from "@/resources";
-import { Message } from "@/views/game/interfaces";
+import { Message, Movement } from "@/views/game/interfaces";
 import { create } from "zustand";
 
 type Store = {
   userInfo: User | undefined;
   setUserInfo: (user: User) => void;
+  opponentName: string | undefined;
+  setOpponentName: (userName: string) => void;
   typeUser: typeUser;
   setTypeUser: (type: typeUser) => void;
   startGame: boolean;
   setStartGame: (startGame: boolean) => void;
-  selectedMoves: Message[];
-  setMoves: (messages: any) => void;
+  selectedMoves: Movement[];
+  setMoves: (messages: Movement) => void;
   movement: Message | undefined;
   setMovement: (message: Message) => void;
 };
@@ -19,6 +21,10 @@ export const AppStore = create<Store>()((set, get) => ({
   ...{
     userInfo: undefined,
     setUserInfo: (userInfo: User) => set({ userInfo }),
+  },
+  ...{
+    opponentName: undefined,
+    setOpponentName: (userName: string) => set({ opponentName: userName }),
   },
   ...{
     movement: undefined,
@@ -34,7 +40,7 @@ export const AppStore = create<Store>()((set, get) => ({
   },
   ...{
     selectedMoves: [],
-    setMoves: (messages: any) => {
+    setMoves: (messages: Movement) => {
       const selectedMoves = get().selectedMoves;
 
       set({

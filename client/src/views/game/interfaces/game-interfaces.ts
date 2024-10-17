@@ -29,3 +29,7 @@ export interface SelectedPiece {
   oldX: number;
   oldY: number;
 }
+
+export interface Movement extends SelectedPiece {
+  senderUserId: string;
+}
